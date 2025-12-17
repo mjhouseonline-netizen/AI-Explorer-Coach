@@ -29,14 +29,14 @@ export const MissionSelector: React.FC<MissionSelectorProps> = ({ selectedTrack,
         </h2>
 
         {/* Filter Controls */}
-        <div className="flex items-center gap-2 bg-slate-800 p-1 rounded-lg border border-slate-700 w-fit">
-            <Filter className="w-4 h-4 text-slate-400 ml-2 mr-1" />
+        <div className="flex flex-wrap items-center gap-2 bg-slate-800 p-1 rounded-lg border border-slate-700 w-fit">
+            <Filter className="w-4 h-4 text-slate-400 ml-2 mr-1 hidden sm:block" />
             {(['all', 1, 2, 3] as const).map((level) => (
                 <button
                     key={level}
                     onClick={() => setFilterLevel(level)}
                     className={`
-                        px-3 py-1.5 text-xs font-bold rounded transition-colors
+                        px-3 py-1.5 text-xs font-bold rounded transition-colors flex-1 sm:flex-none text-center
                         ${filterLevel === level 
                             ? 'bg-cyan-600 text-white shadow-sm' 
                             : 'text-slate-400 hover:text-white hover:bg-slate-700'
@@ -79,9 +79,9 @@ export const MissionSelector: React.FC<MissionSelectorProps> = ({ selectedTrack,
                 <div className="flex justify-between items-start mb-3">
                     <h3 className={`text-lg font-bold transition-colors flex items-center gap-2 ${isCompleted ? 'text-slate-400' : 'text-white group-hover:text-cyan-400'}`}>
                     {mission.title}
-                    {isCompleted && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                    {isCompleted && <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />}
                     </h3>
-                    <span className={`text-xs px-2 py-1 rounded ${isCompleted ? 'bg-slate-800/50 text-slate-500 border border-slate-700/50' : 'bg-slate-700 text-slate-300'}`}>
+                    <span className={`text-xs px-2 py-1 rounded shrink-0 ml-2 ${isCompleted ? 'bg-slate-800/50 text-slate-500 border border-slate-700/50' : 'bg-slate-700 text-slate-300'}`}>
                     Lvl {mission.level}
                     </span>
                 </div>

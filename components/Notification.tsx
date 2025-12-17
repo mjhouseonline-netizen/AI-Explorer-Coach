@@ -17,7 +17,7 @@ interface NotificationContainerProps {
 
 export const NotificationContainer: React.FC<NotificationContainerProps> = ({ notifications, onDismiss }) => {
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none">
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:w-auto z-[100] flex flex-col gap-3 pointer-events-none">
       {notifications.map(n => (
         <div key={n.id} className="pointer-events-auto">
           <NotificationItem notification={n} onDismiss={onDismiss} />
@@ -50,10 +50,10 @@ const NotificationItem: React.FC<{ notification: Notification; onDismiss: (id: s
   return (
     <div className={`
       flex items-start gap-3 p-4 rounded-xl shadow-lg border ${styles[notification.type]} 
-      w-full max-w-sm animate-slideIn backdrop-blur-md transition-all duration-300
+      w-full md:max-w-sm animate-slideIn backdrop-blur-md transition-all duration-300
     `}>
       <div className="mt-0.5">{icons[notification.type]}</div>
-      <p className="text-sm font-medium flex-1 leading-relaxed opacity-95">{notification.message}</p>
+      <p className="text-sm font-medium flex-1 leading-relaxed opacity-95 break-words">{notification.message}</p>
       <button 
         onClick={() => onDismiss(notification.id)} 
         className="p-1 -mr-2 -mt-2 hover:bg-white/20 rounded-lg transition-colors opacity-70 hover:opacity-100"

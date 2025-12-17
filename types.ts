@@ -22,12 +22,19 @@ export type MissionStep = 'WARMUP' | 'LEARN' | 'DO' | 'REFLECT' | 'COMPLETE';
 
 export type Audience = 'kids' | 'adults';
 
-export interface AppState {
-  currentMission: Mission | null;
-  chatHistory: Message[];
-  missionStep: MissionStep;
-  isChatLoading: boolean;
-  userApiKey: string | null;
+export interface Profile {
+  id: string;
+  name: string;
+  avatarColor: string;
   completedMissions: string[];
   audience: Audience;
+  currentMissionId: string | null;
+  chatHistory: Message[];
+}
+
+export interface AppState {
+  profiles: Profile[];
+  currentProfileId: string;
+  isChatLoading: boolean;
+  userApiKey: string | null;
 }

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Track, Mission, Message, AppState, Audience } from './types';
+import { Track, Mission, Message, AppState, Profile, Audience } from './types';
 import { TRACKS, MISSIONS_KIDS, MISSIONS_ADULTS, SYSTEM_INSTRUCTION_KIDS, SYSTEM_INSTRUCTION_ADULTS } from './constants';
-import { initializeGemini, startNewChatSession, sendMessageToGemini, sendMessageStreamToGemini, resumeChatSession } from './services/geminiService';
+import { initializeGemini, startNewChatSession, sendMessageStreamToGemini, resumeChatSession } from './services/geminiService';
 import { TrackCard } from './components/TrackCard';
 import { MissionSelector } from './components/MissionSelector';
 import { ChatInterface } from './components/ChatInterface';
@@ -10,626 +10,418 @@ import { Confetti } from './components/Confetti';
 import { AchievementsModal } from './components/AchievementsModal';
 import { NotificationContainer, Notification, NotificationType } from './components/Notification';
 import { playSound } from './utils/audio';
-import { Brain, Sparkles, Key, Trophy, User, Users, Download, Upload, Volume2, VolumeX } from 'lucide-react';
+import { Brain, Key, Trophy, User, Users, ChevronLeft, Plus, UserCircle, Trash2, Play, LogOut } from 'lucide-react';
 
-// NOTE: In a real production app, you would handle API keys more securely or via a backend proxy.
-// For this demo, we assume process.env.API_KEY is available or prompt the user if not.
+const COLORS = ['bg-indigo-500', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500', 'bg-cyan-500', 'bg-violet-500'];
 
 const App: React.FC = () => {
-  // Initialize state with lazy loading from localStorage
+  // --- STATE INITIALIZATION ---
   const [state, setState] = useState<AppState>(() => {
     try {
-      // 1. Try to load the full app state
-      const savedState = localStorage.getItem('ai_explorer_state');
-      // 2. Fallback to legacy key if needed
-      const savedLegacyProgress = localStorage.getItem('completedMissions');
-
-      if (savedState) {
-        const parsed = JSON.parse(savedState);
-        return {
-          ...parsed,
-          isChatLoading: false, // Always reset loading state on reload
-          // Prioritize env key if available, otherwise use stored key
-          userApiKey: process.env.API_KEY || parsed.userApiKey || null
-        };
+      const saved = localStorage.getItem('ai_explorer_v2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return { ...parsed, isChatLoading: false };
       }
-
+      const defaultId = Date.now().toString();
       return {
-        currentMission: null,
-        chatHistory: [],
-        missionStep: 'WARMUP',
+        profiles: [{
+          id: defaultId,
+          name: 'Explorer 1',
+          avatarColor: COLORS[0],
+          completedMissions: [],
+          audience: 'kids',
+          currentMissionId: null,
+          chatHistory: []
+        }],
+        currentProfileId: defaultId,
         isChatLoading: false,
-        userApiKey: process.env.API_KEY || null,
-        completedMissions: savedLegacyProgress ? JSON.parse(savedLegacyProgress) : [],
-        audience: 'kids'
+        userApiKey: process.env.API_KEY || null
       };
     } catch (e) {
-      // Fallback if parsing fails
-      return {
-        currentMission: null,
-        chatHistory: [],
-        missionStep: 'WARMUP',
-        isChatLoading: false,
-        userApiKey: process.env.API_KEY || null,
-        completedMissions: [],
-        audience: 'kids'
-      };
+      return { profiles: [], currentProfileId: '', isChatLoading: false, userApiKey: null };
     }
   });
 
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
-  const [showApiKeyModal, setShowApiKeyModal] = useState(!process.env.API_KEY && !state.userApiKey);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(!state.userApiKey);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [isDashboardVisible, setIsDashboardVisible] = useState(true);
   const [tempApiKey, setTempApiKey] = useState('');
+  const [newProfileName, setNewProfileName] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
-  // Ref for file import
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Persist App State whenever it changes
+  // --- PERSISTENCE ---
   useEffect(() => {
-    const stateToSave = {
-      currentMission: state.currentMission,
-      chatHistory: state.chatHistory,
-      missionStep: state.missionStep,
-      completedMissions: state.completedMissions,
-      audience: state.audience,
-      userApiKey: state.userApiKey
-    };
-    localStorage.setItem('ai_explorer_state', JSON.stringify(stateToSave));
+    localStorage.setItem('ai_explorer_v2', JSON.stringify(state));
   }, [state]);
 
-  // Initialize Gemini and Resume Session
+  // --- DERIVED DATA ---
+  const currentProfile = useMemo(() => 
+    state.profiles.find(p => p.id === state.currentProfileId) || state.profiles[0]
+  , [state.profiles, state.currentProfileId]);
+
+  const activeMissions = currentProfile.audience === 'kids' ? MISSIONS_KIDS : MISSIONS_ADULTS;
+  const currentMission = activeMissions.find(m => m.id === currentProfile.currentMissionId) || null;
+
+  // --- AI INITIALIZATION ---
   useEffect(() => {
     if (state.userApiKey) {
-      try {
-        initializeGemini(state.userApiKey);
-      } catch (e) {
-        console.error("Failed to initialize AI", e);
-      }
-
-      // If we are reloading into an active mission, we need to reconnect the chat session
-      if (state.currentMission && state.chatHistory.length > 0) {
-        const systemInstruction = state.audience === 'kids' ? SYSTEM_INSTRUCTION_KIDS : SYSTEM_INSTRUCTION_ADULTS;
-        try {
-           resumeChatSession(state.chatHistory, systemInstruction);
-        } catch (error) {
-           console.error("Failed to resume session:", error);
-           addNotification('error', "Could not restore previous chat session. You may need to restart the mission.");
-        }
+      initializeGemini(state.userApiKey);
+      // Resume if there's an active session in the profile
+      if (currentMission && currentProfile.chatHistory.length > 0) {
+        const inst = currentProfile.audience === 'kids' ? SYSTEM_INSTRUCTION_KIDS : SYSTEM_INSTRUCTION_ADULTS;
+        resumeChatSession(currentProfile.chatHistory, inst);
       }
     }
-  }, [state.userApiKey]); // Run on mount or when API key is set
+  }, [state.userApiKey, state.currentProfileId]);
 
-  // Notification Helper
+  // --- HELPERS ---
   const addNotification = (type: NotificationType, message: string) => {
     const id = Date.now().toString();
     setNotifications(prev => [...prev, { id, type, message }]);
-    if (soundEnabled && type === 'error') {
-       // Optional: specific error sound? Using message sound for now
-    }
   };
 
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Derived state for current mission list
-  const activeMissions = state.audience === 'kids' ? MISSIONS_KIDS : MISSIONS_ADULTS;
+  const updateCurrentProfile = (updates: Partial<Profile>) => {
+    setState(prev => ({
+      ...prev,
+      profiles: prev.profiles.map(p => p.id === prev.currentProfileId ? { ...p, ...updates } : p)
+    }));
+  };
 
-  // Memoized progress calculation for the dashboard
   const trackProgressMap = useMemo(() => {
     const stats: Record<string, { completed: number; total: number }> = {};
-    
-    // Initialize stats for all tracks
-    TRACKS.forEach(track => {
-      stats[track] = { completed: 0, total: 0 };
+    TRACKS.forEach(t => stats[t] = { completed: 0, total: 0 });
+    activeMissions.forEach(m => {
+      stats[m.track].total += 1;
+      if (currentProfile.completedMissions.includes(m.id)) stats[m.track].completed += 1;
     });
-
-    // Aggregate counts
-    activeMissions.forEach(mission => {
-      if (stats[mission.track]) {
-        stats[mission.track].total += 1;
-        if (state.completedMissions.includes(mission.id)) {
-          stats[mission.track].completed += 1;
-        }
-      }
-    });
-
     return stats;
-  }, [activeMissions, state.completedMissions]);
+  }, [activeMissions, currentProfile.completedMissions]);
 
-  const handleApiKeySubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      if(tempApiKey.trim().length > 10) {
-          setState(prev => ({...prev, userApiKey: tempApiKey}));
-          setShowApiKeyModal(false);
-          addNotification('success', "API Key saved successfully!");
-          if (soundEnabled) playSound('success');
-      } else {
-          addNotification('error', "Please enter a valid API key (usually starts with AIza...)");
-      }
-  };
-
-  const toggleAudience = () => {
+  // --- HANDLERS ---
+  const handleCreateProfile = () => {
+    if (!newProfileName.trim()) return;
+    const newId = Date.now().toString();
+    const newProf: Profile = {
+      id: newId,
+      name: newProfileName,
+      avatarColor: COLORS[state.profiles.length % COLORS.length],
+      completedMissions: [],
+      audience: 'kids',
+      currentMissionId: null,
+      chatHistory: []
+    };
     setState(prev => ({
-        ...prev,
-        audience: prev.audience === 'kids' ? 'adults' : 'kids'
+      ...prev,
+      profiles: [...prev.profiles, newProf],
+      currentProfileId: newId
     }));
-    setSelectedTrack(null);
-    if (soundEnabled) playSound('click');
-  };
-
-  const handleTrackSelect = (track: Track) => {
-    setSelectedTrack(track);
-    if (soundEnabled) playSound('click');
+    setNewProfileName('');
+    setShowProfileModal(false);
+    setIsDashboardVisible(true);
+    addNotification('success', `Welcome, ${newProf.name}!`);
   };
 
   const handleMissionSelect = async (mission: Mission) => {
     if (soundEnabled) playSound('success');
-    setState(prev => ({ 
-        ...prev, 
-        currentMission: mission, 
-        chatHistory: [], 
-        isChatLoading: true 
-    }));
+    updateCurrentProfile({ currentMissionId: mission.id, chatHistory: [] });
+    setState(prev => ({ ...prev, isChatLoading: true }));
+    setIsDashboardVisible(false);
 
     try {
-      const missionContext = `
-        TITLE: ${mission.title}
-        TRACK: ${mission.track}
-        LEVEL: ${mission.level}
-        GOAL: ${mission.goal}
-        ACTIVITY IDEA: ${mission.sample_activity_idea}
-        TARGET AUDIENCE: ${state.audience.toUpperCase()}
-      `;
-
-      const systemInstruction = state.audience === 'kids' ? SYSTEM_INSTRUCTION_KIDS : SYSTEM_INSTRUCTION_ADULTS;
+      const missionContext = `TITLE: ${mission.title}\nGOAL: ${mission.goal}\nAUDIENCE: ${currentProfile.audience.toUpperCase()}`;
+      const inst = currentProfile.audience === 'kids' ? SYSTEM_INSTRUCTION_KIDS : SYSTEM_INSTRUCTION_ADULTS;
+      const resp = await startNewChatSession(missionContext, inst, mission.track);
       
-      // Pass the mission track so we can enable tools if needed
-      const responseText = await startNewChatSession(missionContext, systemInstruction, mission.track);
-      
-      const initialMessage: Message = {
-        id: Date.now().toString(),
-        role: 'model',
-        content: responseText,
-        timestamp: Date.now()
-      };
-
-      setState(prev => ({
-        ...prev,
-        chatHistory: [initialMessage],
-        isChatLoading: false
-      }));
-
-    } catch (error: any) {
-      console.error("Failed to start mission", error);
-      setState(prev => ({ ...prev, isChatLoading: false, currentMission: null })); // Reset to dashboard
-      
-      // Handle specific error types
-      if (error.message.includes('API Key') || error.message.includes('403')) {
-          addNotification('error', "Authentication failed. Please check your API Key.");
-          setShowApiKeyModal(true); // Recovery option: Open modal
-      } else {
-          addNotification('error', error.message || "Failed to start mission. Please try again.");
-      }
-    }
-  };
-
-  const handleSendMessage = async (text: string) => {
-    if (soundEnabled) playSound('message');
-    // 1. Add user message optimistically
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: text,
-      timestamp: Date.now()
-    };
-    
-    // 2. Add placeholder for AI message
-    const botMsgId = (Date.now() + 1).toString();
-    const botMsg: Message = {
-      id: botMsgId,
-      role: 'model',
-      content: '', // Empty content to start
-      timestamp: Date.now() + 1
-    };
-
-    setState(prev => ({
-      ...prev,
-      chatHistory: [...prev.chatHistory, userMsg, botMsg],
-      isChatLoading: true
-    }));
-
-    try {
-      // 3. Start stream
-      const stream = sendMessageStreamToGemini(text);
-      let fullContent = '';
-
-      for await (const chunk of stream) {
-        fullContent += chunk;
-        
-        // 4. Update the bot message with accumulated content
-        setState(prev => ({
-          ...prev,
-          chatHistory: prev.chatHistory.map(msg => 
-            msg.id === botMsgId ? { ...msg, content: fullContent } : msg
-          )
-        }));
-      }
-
-    } catch (err) {
-      console.error("Stream failed", err);
-      // Ensure the user sees the error in the chat bubble if the stream crashes entirely
-      setState(prev => ({
-          ...prev,
-          chatHistory: prev.chatHistory.map(msg => 
-            msg.id === botMsgId ? { ...msg, content: "**Error**: Failed to receive response. Please try again." } : msg
-          )
-      }));
-      addNotification('error', "Lost connection during generation.");
+      const initMsg: Message = { id: Date.now().toString(), role: 'model', content: resp, timestamp: Date.now() };
+      updateCurrentProfile({ chatHistory: [initMsg] });
+    } catch (e: any) {
+      addNotification('error', e.message);
+      updateCurrentProfile({ currentMissionId: null });
+      setIsDashboardVisible(true);
     } finally {
       setState(prev => ({ ...prev, isChatLoading: false }));
     }
   };
 
-  const endSession = () => {
-    if (window.confirm("Are you sure you want to exit? Progress for this session won't be saved unless you mark it as complete.")) {
+  const handleSendMessage = async (text: string) => {
+    if (soundEnabled) playSound('message');
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text, timestamp: Date.now() };
+    const botId = (Date.now() + 1).toString();
+    const botMsg: Message = { id: botId, role: 'model', content: '', timestamp: Date.now() + 1 };
+
+    const newHistory = [...currentProfile.chatHistory, userMsg, botMsg];
+    updateCurrentProfile({ chatHistory: newHistory });
+    setState(prev => ({ ...prev, isChatLoading: true }));
+
+    try {
+      const stream = sendMessageStreamToGemini(text);
+      let full = '';
+      for await (const chunk of stream) {
+        full += chunk;
         setState(prev => ({
-            ...prev,
-            currentMission: null,
-            chatHistory: [],
-            missionStep: 'WARMUP'
+          ...prev,
+          profiles: prev.profiles.map(p => p.id === prev.currentProfileId ? {
+            ...p,
+            chatHistory: p.chatHistory.map(m => m.id === botId ? { ...m, content: full } : m)
+          } : p)
         }));
-        setSelectedTrack(null);
-        if (soundEnabled) playSound('click');
+      }
+    } catch (err) {
+      addNotification('error', "Lost connection. Please try again.");
+    } finally {
+      setState(prev => ({ ...prev, isChatLoading: false }));
     }
   };
 
   const completeMission = () => {
-    if (!state.currentMission) return;
-    
+    if (!currentMission) return;
     if (soundEnabled) playSound('complete');
-
-    // Add to completed list if not already there
-    const missionId = state.currentMission.id;
-    setState(prev => ({
-        ...prev,
-        completedMissions: prev.completedMissions.includes(missionId) 
-            ? prev.completedMissions 
-            : [...prev.completedMissions, missionId],
-        currentMission: null,
-        chatHistory: [],
-        missionStep: 'WARMUP'
-    }));
-
-    // Trigger confetti
+    const mid = currentMission.id;
+    updateCurrentProfile({
+      completedMissions: currentProfile.completedMissions.includes(mid) ? currentProfile.completedMissions : [...currentProfile.completedMissions, mid],
+      currentMissionId: null,
+      chatHistory: []
+    });
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 5000);
-    addNotification('success', `Mission Complete: ${state.currentMission.title}`);
+    setIsDashboardVisible(true);
+    addNotification('success', "Mission Accomplished! Badge earned.");
   };
 
-  // --- SAVE / LOAD HANDLERS ---
-  const handleSaveProgress = () => {
-    const { userApiKey, isChatLoading, ...dataToSave } = state;
-    const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ai-explorer-save-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    addNotification('success', "Progress saved to file.");
-    if (soundEnabled) playSound('success');
+  const quitMission = () => {
+    if (window.confirm("Abandon this mission? Your current conversation will be cleared.")) {
+      updateCurrentProfile({ currentMissionId: null, chatHistory: [] });
+      setIsDashboardVisible(true);
+    }
   };
-
-  const handleLoadProgress = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        const loadedState = JSON.parse(content);
-        
-        if (!Array.isArray(loadedState.completedMissions)) {
-          throw new Error("Invalid save file format");
-        }
-
-        if (window.confirm("This will overwrite your current progress. Are you sure?")) {
-            if (state.userApiKey && loadedState.currentMission && loadedState.chatHistory?.length > 0) {
-                 const systemInstruction = loadedState.audience === 'kids' ? SYSTEM_INSTRUCTION_KIDS : SYSTEM_INSTRUCTION_ADULTS;
-                 try {
-                     initializeGemini(state.userApiKey);
-                     resumeChatSession(loadedState.chatHistory, systemInstruction);
-                 } catch (err) {
-                     console.error("Could not resume chat session from load", err);
-                 }
-            }
-
-            setState(prev => ({
-              ...prev,
-              ...loadedState,
-              userApiKey: prev.userApiKey, 
-              isChatLoading: false
-            }));
-            if (soundEnabled) playSound('complete');
-            addNotification('success', "Progress loaded successfully!");
-        }
-      } catch (err) {
-        console.error(err);
-        addNotification('error', "Failed to load progress file. It might be corrupted.");
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = '';
-  };
-
-  // --- GLOBAL KEYBOARD SHORTCUTS ---
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Save: Ctrl+S or Cmd+S
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        handleSaveProgress();
-      }
-      
-      // Load: Ctrl+L or Cmd+L
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
-        e.preventDefault();
-        fileInputRef.current?.click();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state, soundEnabled]); // Depend on state to ensure save handler has latest data
 
   // --- RENDER ---
-  
-  // Render the Modal on top of everything
-  const renderApiKeyModal = () => (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4">
-        <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-md w-full shadow-2xl animate-fadeIn">
-            <div className="flex justify-center mb-6">
-                <div className="bg-cyan-500/20 p-4 rounded-full">
-                  <Key className="w-10 h-10 text-cyan-400" />
-                </div>
-            </div>
-            <h1 className="text-2xl font-bold text-white text-center mb-2 font-fredoka">Enter API Key</h1>
-            <p className="text-slate-400 text-center mb-6 text-sm">
-                To start the AI Explorer Coach, please provide a valid Google Gemini API Key.
-            </p>
-            <form onSubmit={handleApiKeySubmit} className="space-y-4">
-                <input 
-                  type="password" 
-                  value={tempApiKey}
-                  onChange={(e) => setTempApiKey(e.target.value)}
-                  placeholder="AIza..."
-                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-                />
-                <button 
-                  type="submit" 
-                  disabled={tempApiKey.length < 10}
-                  className="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold py-3 rounded-lg transition-all disabled:opacity-50"
-                >
-                    Unlock Coach
-                </button>
-            </form>
-            {/* Close button only if we have a key already (e.g. changing key) */}
-            {state.userApiKey && (
-               <button 
-                 onClick={() => setShowApiKeyModal(false)}
-                 className="w-full mt-3 text-slate-400 hover:text-white text-sm"
-               >
-                 Cancel
-               </button>
-            )}
-            <p className="text-xs text-slate-500 text-center mt-4">
-                The key is stored only in your browser's memory for this session.
-            </p>
+  return (
+    <div className="min-h-screen bg-slate-900 overflow-hidden h-full flex flex-col text-slate-100">
+      <NotificationContainer notifications={notifications} onDismiss={removeNotification} />
+      {showConfetti && <Confetti />}
+      
+      {/* API Key Modal */}
+      {showApiKeyModal && (
+        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-md w-full shadow-2xl">
+            <Key className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-center mb-2 font-fredoka">Connect to Gemini</h2>
+            <p className="text-slate-400 text-sm text-center mb-6">Enter your API Key to enable the AI Coach.</p>
+            <input 
+              type="password" 
+              value={tempApiKey} 
+              onChange={e => setTempApiKey(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 mb-4 text-white focus:ring-2 focus:ring-cyan-500"
+              placeholder="AIza..."
+            />
+            <button 
+              onClick={() => { setState(s => ({...s, userApiKey: tempApiKey})); setShowApiKeyModal(false); }}
+              className="w-full bg-cyan-600 hover:bg-cyan-500 py-3 rounded-lg font-bold transition-all"
+            >Let's Explore!</button>
+          </div>
         </div>
-    </div>
-  );
+      )}
 
-  // Active Mission View
-  if (state.currentMission) {
-    return (
-      <>
-        {showApiKeyModal && renderApiKeyModal()}
-        <NotificationContainer notifications={notifications} onDismiss={removeNotification} />
+      {/* Profile Switcher Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-[150] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <h2 className="text-xl font-bold mb-4 font-fredoka flex items-center gap-2">
+              <UserCircle className="w-6 h-6 text-indigo-400" /> Choose Explorer
+            </h2>
+            <div className="space-y-2 mb-6 max-h-60 overflow-y-auto pr-2 scrollbar-hide">
+              {state.profiles.map(p => (
+                <div key={p.id} className="flex items-center gap-2 group">
+                  <button 
+                    onClick={() => { setState(s => ({...s, currentProfileId: p.id})); setShowProfileModal(false); }}
+                    className={`flex-1 flex items-center gap-3 p-3 rounded-xl transition-all border ${p.id === state.currentProfileId ? 'bg-indigo-600 border-indigo-400' : 'bg-slate-800 border-slate-700 hover:bg-slate-700'}`}
+                  >
+                    <div className={`w-8 h-8 rounded-full ${p.avatarColor} flex items-center justify-center font-bold text-white shadow-inner`}>{p.name[0]}</div>
+                    <div className="text-left overflow-hidden">
+                      <div className="font-bold truncate">{p.name}</div>
+                      <div className="text-[10px] opacity-70 uppercase font-bold tracking-tighter">{p.audience} mode</div>
+                    </div>
+                  </button>
+                  {state.profiles.length > 1 && (
+                    <button 
+                      onClick={() => {
+                        if(window.confirm(`Delete ${p.name}'s profile?`)) {
+                          setState(s => {
+                            const remaining = s.profiles.filter(prof => prof.id !== p.id);
+                            return { ...s, profiles: remaining, currentProfileId: s.currentProfileId === p.id ? remaining[0].id : s.currentProfileId };
+                          });
+                        }
+                      }} 
+                      className="p-3 text-slate-500 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                value={newProfileName} 
+                onChange={e => setNewProfileName(e.target.value)} 
+                placeholder="Name"
+                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+              <button onClick={handleCreateProfile} className="bg-indigo-600 hover:bg-indigo-500 p-2 rounded-lg text-white"><Plus className="w-5 h-5" /></button>
+            </div>
+            <button onClick={() => setShowProfileModal(false)} className="w-full mt-4 text-slate-500 hover:text-slate-300 text-sm">Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW CONDITIONAL RENDER */}
+      {!isDashboardVisible && currentMission ? (
         <ChatInterface 
-          mission={state.currentMission}
-          history={state.chatHistory}
-          isLoading={state.isChatLoading}
-          onSendMessage={handleSendMessage}
-          onEndSession={endSession}
+          mission={currentMission} 
+          history={currentProfile.chatHistory} 
+          isLoading={state.isChatLoading} 
+          onSendMessage={handleSendMessage} 
+          onEndSession={() => setIsDashboardVisible(true)} 
           onCompleteMission={completeMission}
         />
-      </>
-    );
-  }
-
-  // Dashboard / Selection View
-  return (
-    <div className="min-h-screen bg-slate-900 p-6 md:p-12 overflow-y-auto relative">
-      <NotificationContainer notifications={notifications} onDismiss={removeNotification} />
-      {showApiKeyModal && renderApiKeyModal()}
-      {showConfetti && <Confetti />}
-      <AchievementsModal 
-        isOpen={showAchievements} 
-        onClose={() => setShowAchievements(false)} 
-        completedMissions={state.completedMissions}
-        allMissions={activeMissions}
-      />
-      
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Header */}
-        <header className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
-          <div className="flex items-center gap-4">
-            <div className={`
-              p-3 rounded-xl shadow-lg transition-all duration-500
-              ${state.audience === 'kids' ? 'bg-gradient-to-br from-indigo-500 to-cyan-500' : 'bg-gradient-to-br from-slate-600 to-slate-800 border border-slate-600'}
-            `}>
-              <Brain className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white font-fredoka tracking-wide">
-                {state.audience === 'kids' ? 'AI Explorer Coach' : 'AI Pro Coach'}
-              </h1>
-              <p className="text-slate-400 font-nunito mt-1">
-                {state.audience === 'kids' 
-                  ? 'Your friendly guide to the world of Artificial Intelligence.'
-                  : 'Practical GenAI skills for Teens & Adults.'
-                }
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-             
-             {/* Save/Load Controls */}
-             <div className="flex items-center gap-2">
-                <button 
-                  onClick={handleSaveProgress}
-                  className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-white bg-slate-800 rounded-lg border border-slate-700 transition-colors text-sm font-medium"
-                  title="Save Progress to JSON File (Ctrl+S)"
-                >
-                  <Download className="w-4 h-4" /> Save
-                </button>
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-white bg-slate-800 rounded-lg border border-slate-700 transition-colors text-sm font-medium"
-                  title="Load Progress from JSON File (Ctrl+L)"
-                >
-                  <Upload className="w-4 h-4" /> Load
-                </button>
-                <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept=".json" 
-                    onChange={handleLoadProgress} 
-                />
-             </div>
-
-             {/* Sound Toggle */}
-             <button
-               onClick={() => setSoundEnabled(!soundEnabled)}
-               className="p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
-               title={soundEnabled ? "Mute Sounds" : "Enable Sounds"}
-             >
-               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-             </button>
-
-             {/* Audience Toggle */}
-            <div className="bg-slate-800 p-1 rounded-lg flex items-center border border-slate-700">
-                <button
-                    onClick={() => state.audience !== 'kids' && toggleAudience()}
-                    className={`
-                        flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-semibold transition-all
-                        ${state.audience === 'kids' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'}
-                    `}
-                >
-                    <User className="w-3 h-3" /> Kids
-                </button>
-                <button
-                    onClick={() => state.audience !== 'adults' && toggleAudience()}
-                    className={`
-                        flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-semibold transition-all
-                        ${state.audience === 'adults' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'}
-                    `}
-                >
-                    <Users className="w-3 h-3" /> Adults
-                </button>
-            </div>
-
-            <button 
-               onClick={() => {
-                 setShowAchievements(true);
-                 if (soundEnabled) playSound('click');
-               }}
-               className="flex items-center gap-2 bg-slate-800/50 hover:bg-slate-700/50 transition-colors px-4 py-2 rounded-full border border-slate-700 ml-2"
-            >
-               <Trophy className="w-4 h-4 text-yellow-400" />
-               <span className="text-slate-300 text-sm font-semibold">
-                 {state.completedMissions.filter(id => activeMissions.some(m => m.id === id)).length} Done
-               </span>
-            </button>
-            
-            {/* Settings / Key Reset */}
-            <button 
-              onClick={() => setShowApiKeyModal(true)}
-              className="p-2 text-slate-500 hover:text-slate-300 transition-colors"
-              title="Change API Key"
-            >
-              <Key className="w-4 h-4" />
-            </button>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          
-          {/* Left: Tracks Grid */}
-          <div className={`lg:col-span-${selectedTrack ? '1' : '3'} transition-all duration-500`}>
-             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-200 font-fredoka">
-                   {selectedTrack ? 'Tracks' : 'Choose a Track'}
-                </h2>
-                {selectedTrack && (
-                   <button 
-                     onClick={() => {
-                       setSelectedTrack(null);
-                       if (soundEnabled) playSound('click');
-                     }}
-                     className="text-xs text-slate-400 hover:text-white underline"
-                   >
-                     Show all
-                   </button>
+      ) : (
+        <div className="flex-1 overflow-y-auto w-full">
+          <div className="max-w-6xl mx-auto p-4 md:p-8">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 shadow-lg`}>
+                  <Brain className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold font-fredoka">AI Explorer Coach</h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <button onClick={() => setShowProfileModal(true)} className="flex items-center gap-2 px-2.5 py-1 bg-slate-800 rounded-full text-xs hover:bg-slate-700 transition-all border border-slate-700 group">
+                      <div className={`w-3.5 h-3.5 rounded-full ${currentProfile.avatarColor}`} />
+                      <span className="font-bold text-slate-300 group-hover:text-white">{currentProfile.name}</span>
+                      <ChevronLeft className="w-3 h-3 -rotate-90 opacity-50" />
+                    </button>
+                    <span className="text-slate-700 text-xs">|</span>
+                    <button 
+                      onClick={() => updateCurrentProfile({ audience: currentProfile.audience === 'kids' ? 'adults' : 'kids' })}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-bold transition-colors"
+                    >
+                      {currentProfile.audience === 'kids' ? 'Switch to Pro' : 'Switch to Kids'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 w-full md:w-auto">
+                {currentMission && (
+                  <button 
+                    onClick={() => setIsDashboardVisible(false)}
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-indigo-600 px-4 py-2 rounded-lg border border-indigo-500 hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-900/20"
+                  >
+                    <Play className="w-4 h-4 text-white" />
+                    <span className="font-bold text-sm">Resume Mission</span>
+                  </button>
                 )}
-             </div>
-             
-             <div className={`grid gap-4 ${selectedTrack ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-                {TRACKS.map(track => {
-                  const stats = trackProgressMap[track] || { completed: 0, total: 0 };
-                  return (
+                <button onClick={() => setShowAchievements(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 hover:bg-slate-700 transition-all">
+                  <Trophy className="w-4 h-4 text-yellow-400" />
+                  <span className="font-bold text-sm">Badges</span>
+                </button>
+                <button onClick={() => setShowApiKeyModal(true)} className="p-2 text-slate-500 hover:text-white" title="Settings"><Key className="w-5 h-5" /></button>
+              </div>
+            </header>
+
+            {/* TRACKS & MISSIONS GRID */}
+            <div className="grid lg:grid-cols-3 gap-8 pb-12">
+              <div className={`${selectedTrack ? 'hidden lg:block' : 'col-span-3 lg:col-span-1'} space-y-4`}>
+                <h2 className="text-xl font-bold font-fredoka mb-4 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-cyan-400" /> Choose a Track
+                </h2>
+                <div className={`grid gap-3 ${selectedTrack ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-1'}`}>
+                  {TRACKS.map(t => (
                     <TrackCard 
-                      key={track} 
-                      track={track} 
-                      onClick={handleTrackSelect}
-                      isSelected={selectedTrack === track}
-                      completedCount={stats.completed}
-                      totalCount={stats.total}
+                      key={t} 
+                      track={t} 
+                      onClick={setSelectedTrack} 
+                      isSelected={selectedTrack === t} 
+                      completedCount={trackProgressMap[t].completed} 
+                      totalCount={trackProgressMap[t].total} 
                     />
-                  );
-                })}
-             </div>
-          </div>
+                  ))}
+                </div>
+              </div>
+              
+              {selectedTrack ? (
+                <div className="lg:col-span-2 animate-fadeIn">
+                  <button onClick={() => setSelectedTrack(null)} className="lg:hidden flex items-center gap-2 text-slate-400 mb-6 hover:text-white">
+                    <ChevronLeft /> Back to Tracks
+                  </button>
+                  
+                  {currentMission && currentMission.track === selectedTrack && (
+                     <div className="mb-6 p-4 bg-indigo-600/10 border border-indigo-500/30 rounded-xl flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Active Session</p>
+                          <h4 className="text-white font-bold">{currentMission.title}</h4>
+                        </div>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => setIsDashboardVisible(false)}
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all"
+                          >Resume</button>
+                          <button 
+                            onClick={quitMission}
+                            className="text-slate-500 hover:text-red-400 p-2"
+                            title="Quit Mission"
+                          ><LogOut className="w-4 h-4" /></button>
+                        </div>
+                     </div>
+                  )}
 
-          {/* Right: Mission Selector (Only visible when track selected) */}
-          {selectedTrack && (
-            <div className="lg:col-span-2 animate-slideIn">
-               <MissionSelector 
-                 selectedTrack={selectedTrack} 
-                 missions={activeMissions}
-                 onSelectMission={handleMissionSelect}
-                 completedMissionIds={state.completedMissions}
-               />
+                  <MissionSelector 
+                    selectedTrack={selectedTrack} 
+                    missions={activeMissions} 
+                    onSelectMission={handleMissionSelect} 
+                    completedMissionIds={currentProfile.completedMissions} 
+                  />
+                </div>
+              ) : (
+                <div className="hidden lg:flex lg:col-span-2 flex-col items-center justify-center p-12 text-center border-2 border-dashed border-slate-800 rounded-3xl opacity-40">
+                   <RocketIcon className="w-20 h-20 text-slate-700 mb-4" />
+                   <h3 className="text-xl font-fredoka">Select a track to see missions</h3>
+                   <p className="text-sm">Your AI journey starts with a single step!</p>
+                </div>
+              )}
             </div>
-          )}
-          
+          </div>
         </div>
+      )}
 
-      </div>
+      {showAchievements && (
+        <AchievementsModal 
+          isOpen={true} 
+          onClose={() => setShowAchievements(false)} 
+          completedMissions={currentProfile.completedMissions} 
+          allMissions={activeMissions} 
+        />
+      )}
     </div>
   );
 };
+
+// Simple internal icon component
+const RocketIcon = ({className}: {className?: string}) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+  </svg>
+);
 
 export default App;
