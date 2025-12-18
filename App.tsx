@@ -10,7 +10,7 @@ import { Confetti } from './components/Confetti';
 import { AchievementsModal } from './components/AchievementsModal';
 import { NotificationContainer, Notification, NotificationType } from './components/Notification';
 import { playSound } from './utils/audio';
-import { Brain, Key, Trophy, User, Users, ChevronLeft, Plus, UserCircle, Trash2, Play, LogOut } from 'lucide-react';
+import { Brain, Key, Trophy, User, Users, ChevronLeft, Plus, UserCircle, Trash2, Play, LogOut, Settings } from 'lucide-react';
 
 const COLORS = ['bg-indigo-500', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500', 'bg-cyan-500', 'bg-violet-500'];
 
@@ -71,7 +71,6 @@ const App: React.FC = () => {
   useEffect(() => {
     if (state.userApiKey) {
       initializeGemini(state.userApiKey);
-      // Resume if there's an active session in the profile
       if (currentMission && currentProfile.chatHistory.length > 0) {
         const inst = currentProfile.audience === 'kids' ? SYSTEM_INSTRUCTION_KIDS : SYSTEM_INSTRUCTION_ADULTS;
         resumeChatSession(currentProfile.chatHistory, inst);
@@ -204,16 +203,15 @@ const App: React.FC = () => {
     }
   };
 
-  // --- RENDER ---
   return (
-    <div className="min-h-screen bg-slate-900 overflow-hidden h-full flex flex-col text-slate-100">
+    <div className="min-h-screen bg-slate-900 overflow-hidden h-full flex flex-col text-slate-100 selection:bg-cyan-500/30">
       <NotificationContainer notifications={notifications} onDismiss={removeNotification} />
       {showConfetti && <Confetti />}
       
       {/* API Key Modal */}
       {showApiKeyModal && (
         <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-md w-full shadow-2xl">
+          <div className="bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-700 max-w-md w-full shadow-2xl">
             <Key className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-center mb-2 font-fredoka">Connect to Gemini</h2>
             <p className="text-slate-400 text-sm text-center mb-6">Enter your API Key to enable the AI Coach.</p>
@@ -221,12 +219,12 @@ const App: React.FC = () => {
               type="password" 
               value={tempApiKey} 
               onChange={e => setTempApiKey(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 mb-4 text-white focus:ring-2 focus:ring-cyan-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 mb-4 text-white focus:ring-2 focus:ring-cyan-500 transition-all outline-none"
               placeholder="AIza..."
             />
             <button 
               onClick={() => { setState(s => ({...s, userApiKey: tempApiKey})); setShowApiKeyModal(false); }}
-              className="w-full bg-cyan-600 hover:bg-cyan-500 py-3 rounded-lg font-bold transition-all"
+              className="w-full bg-cyan-600 hover:bg-cyan-500 py-3 rounded-lg font-bold transition-all transform active:scale-[0.98]"
             >Let's Explore!</button>
           </div>
         </div>
@@ -235,20 +233,20 @@ const App: React.FC = () => {
       {/* Profile Switcher Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 z-[150] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <h2 className="text-xl font-bold mb-4 font-fredoka flex items-center gap-2">
               <UserCircle className="w-6 h-6 text-indigo-400" /> Choose Explorer
             </h2>
-            <div className="space-y-2 mb-6 max-h-60 overflow-y-auto pr-2 scrollbar-hide">
+            <div className="flex-1 space-y-2 mb-6 overflow-y-auto pr-1 scrollbar-hide">
               {state.profiles.map(p => (
                 <div key={p.id} className="flex items-center gap-2 group">
                   <button 
                     onClick={() => { setState(s => ({...s, currentProfileId: p.id})); setShowProfileModal(false); }}
-                    className={`flex-1 flex items-center gap-3 p-3 rounded-xl transition-all border ${p.id === state.currentProfileId ? 'bg-indigo-600 border-indigo-400' : 'bg-slate-800 border-slate-700 hover:bg-slate-700'}`}
+                    className={`flex-1 flex items-center gap-3 p-3 rounded-xl transition-all border ${p.id === state.currentProfileId ? 'bg-indigo-600 border-indigo-400 shadow-lg shadow-indigo-900/20' : 'bg-slate-800 border-slate-700 hover:bg-slate-700'}`}
                   >
-                    <div className={`w-8 h-8 rounded-full ${p.avatarColor} flex items-center justify-center font-bold text-white shadow-inner`}>{p.name[0]}</div>
+                    <div className={`w-10 h-10 rounded-full ${p.avatarColor} flex items-center justify-center font-bold text-white shadow-inner shrink-0`}>{p.name[0]}</div>
                     <div className="text-left overflow-hidden">
-                      <div className="font-bold truncate">{p.name}</div>
+                      <div className="font-bold truncate text-sm md:text-base">{p.name}</div>
                       <div className="text-[10px] opacity-70 uppercase font-bold tracking-tighter">{p.audience} mode</div>
                     </div>
                   </button>
@@ -262,7 +260,7 @@ const App: React.FC = () => {
                           });
                         }
                       }} 
-                      className="p-3 text-slate-500 hover:text-red-400 transition-colors"
+                      className="p-3 text-slate-500 hover:text-red-400 transition-colors shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -275,17 +273,16 @@ const App: React.FC = () => {
                 type="text" 
                 value={newProfileName} 
                 onChange={e => setNewProfileName(e.target.value)} 
-                placeholder="Name"
+                placeholder="New Name"
                 className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
-              <button onClick={handleCreateProfile} className="bg-indigo-600 hover:bg-indigo-500 p-2 rounded-lg text-white"><Plus className="w-5 h-5" /></button>
+              <button onClick={handleCreateProfile} className="bg-indigo-600 hover:bg-indigo-500 p-2 rounded-lg text-white transition-colors"><Plus className="w-5 h-5" /></button>
             </div>
-            <button onClick={() => setShowProfileModal(false)} className="w-full mt-4 text-slate-500 hover:text-slate-300 text-sm">Close</button>
+            <button onClick={() => setShowProfileModal(false)} className="w-full mt-4 py-2 text-slate-500 hover:text-slate-300 text-sm font-medium">Close</button>
           </div>
         </div>
       )}
 
-      {/* VIEW CONDITIONAL RENDER */}
       {!isDashboardVisible && currentMission ? (
         <ChatInterface 
           mission={currentMission} 
@@ -296,57 +293,60 @@ const App: React.FC = () => {
           onCompleteMission={completeMission}
         />
       ) : (
-        <div className="flex-1 overflow-y-auto w-full">
+        <div className="flex-1 overflow-y-auto w-full scroll-smooth">
           <div className="max-w-6xl mx-auto p-4 md:p-8">
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 lg:mb-12">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 shadow-lg`}>
+                <div className={`p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 shadow-xl shadow-indigo-900/20`}>
                   <Brain className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold font-fredoka">AI Explorer Coach</h1>
-                  <div className="flex items-center gap-2 mt-1">
-                    <button onClick={() => setShowProfileModal(true)} className="flex items-center gap-2 px-2.5 py-1 bg-slate-800 rounded-full text-xs hover:bg-slate-700 transition-all border border-slate-700 group">
-                      <div className={`w-3.5 h-3.5 rounded-full ${currentProfile.avatarColor}`} />
-                      <span className="font-bold text-slate-300 group-hover:text-white">{currentProfile.name}</span>
-                      <ChevronLeft className="w-3 h-3 -rotate-90 opacity-50" />
+                  <h1 className="text-2xl md:text-3xl font-bold font-fredoka tracking-tight">AI Explorer Coach</h1>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <button onClick={() => setShowProfileModal(true)} className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full text-xs hover:bg-slate-700 transition-all border border-slate-700 group ring-offset-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none">
+                      <div className={`w-3 h-3 rounded-full ${currentProfile.avatarColor} shadow-inner`} />
+                      <span className="font-bold text-slate-300 group-hover:text-white transition-colors">{currentProfile.name}</span>
+                      <ChevronLeft className="w-3 h-3 -rotate-90 opacity-40 group-hover:opacity-100 transition-opacity" />
                     </button>
-                    <span className="text-slate-700 text-xs">|</span>
+                    <span className="text-slate-800 text-xs">|</span>
                     <button 
                       onClick={() => updateCurrentProfile({ audience: currentProfile.audience === 'kids' ? 'adults' : 'kids' })}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-bold transition-colors"
+                      className="text-[11px] uppercase tracking-wider text-indigo-400 hover:text-indigo-300 font-extrabold transition-colors px-1"
                     >
-                      {currentProfile.audience === 'kids' ? 'Switch to Pro' : 'Switch to Kids'}
+                      {currentProfile.audience === 'kids' ? 'Pro Mode' : 'Kids Mode'}
                     </button>
                   </div>
                 </div>
               </div>
               
-              <div className="flex gap-2 w-full md:w-auto">
+              <div className="flex gap-2 w-full sm:w-auto items-center">
                 {currentMission && (
                   <button 
                     onClick={() => setIsDashboardVisible(false)}
-                    className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-indigo-600 px-4 py-2 rounded-lg border border-indigo-500 hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-900/20"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 px-5 py-2.5 rounded-xl border border-indigo-500 hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-900/40 active:scale-[0.98]"
                   >
-                    <Play className="w-4 h-4 text-white" />
-                    <span className="font-bold text-sm">Resume Mission</span>
+                    <Play className="w-4 h-4 text-white fill-current" />
+                    <span className="font-bold text-sm">Resume</span>
                   </button>
                 )}
-                <button onClick={() => setShowAchievements(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 hover:bg-slate-700 transition-all">
+                <button onClick={() => setShowAchievements(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800 px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all active:scale-[0.98]">
                   <Trophy className="w-4 h-4 text-yellow-400" />
                   <span className="font-bold text-sm">Badges</span>
                 </button>
-                <button onClick={() => setShowApiKeyModal(true)} className="p-2 text-slate-500 hover:text-white" title="Settings"><Key className="w-5 h-5" /></button>
+                <button onClick={() => setShowApiKeyModal(true)} className="p-2.5 bg-slate-800 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700 transition-all" title="Settings">
+                    <Settings className="w-5 h-5" />
+                </button>
               </div>
             </header>
 
-            {/* TRACKS & MISSIONS GRID */}
-            <div className="grid lg:grid-cols-3 gap-8 pb-12">
-              <div className={`${selectedTrack ? 'hidden lg:block' : 'col-span-3 lg:col-span-1'} space-y-4`}>
-                <h2 className="text-xl font-bold font-fredoka mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-cyan-400" /> Choose a Track
-                </h2>
-                <div className={`grid gap-3 ${selectedTrack ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-1'}`}>
+            <div className="grid lg:grid-cols-12 gap-8 pb-12">
+              <div className={`${selectedTrack ? 'hidden lg:block lg:col-span-4' : 'col-span-12 lg:col-span-4'} space-y-6`}>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold font-fredoka flex items-center gap-2">
+                    <Users className="w-5 h-5 text-cyan-400" /> Choose a Track
+                    </h2>
+                </div>
+                <div className={`grid gap-4 ${selectedTrack ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-1'}`}>
                   {TRACKS.map(t => (
                     <TrackCard 
                       key={t} 
@@ -360,46 +360,53 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-              {selectedTrack ? (
-                <div className="lg:col-span-2 animate-fadeIn">
-                  <button onClick={() => setSelectedTrack(null)} className="lg:hidden flex items-center gap-2 text-slate-400 mb-6 hover:text-white">
-                    <ChevronLeft /> Back to Tracks
-                  </button>
-                  
-                  {currentMission && currentMission.track === selectedTrack && (
-                     <div className="mb-6 p-4 bg-indigo-600/10 border border-indigo-500/30 rounded-xl flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Active Session</p>
-                          <h4 className="text-white font-bold">{currentMission.title}</h4>
-                        </div>
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={() => setIsDashboardVisible(false)}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all"
-                          >Resume</button>
-                          <button 
-                            onClick={quitMission}
-                            className="text-slate-500 hover:text-red-400 p-2"
-                            title="Quit Mission"
-                          ><LogOut className="w-4 h-4" /></button>
-                        </div>
-                     </div>
-                  )}
+              <div className={`${selectedTrack ? 'col-span-12 lg:col-span-8' : 'hidden lg:flex lg:col-span-8'} animate-fadeIn flex flex-col`}>
+                {selectedTrack ? (
+                  <>
+                    <button onClick={() => setSelectedTrack(null)} className="lg:hidden flex items-center gap-2 text-slate-400 mb-6 hover:text-white transition-colors group">
+                      <div className="bg-slate-800 p-2 rounded-lg group-hover:bg-slate-700 transition-colors">
+                        <ChevronLeft className="w-5 h-5" />
+                      </div>
+                      <span className="font-bold">Back to Tracks</span>
+                    </button>
+                    
+                    {currentMission && currentMission.track === selectedTrack && (
+                       <div className="mb-6 p-5 bg-indigo-600/10 border border-indigo-500/30 rounded-2xl flex items-center justify-between shadow-inner">
+                          <div className="min-w-0 pr-4">
+                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">In Progress</p>
+                            <h4 className="text-white font-bold truncate text-sm md:text-base">{currentMission.title}</h4>
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <button 
+                              onClick={() => setIsDashboardVisible(false)}
+                              className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
+                            >Resume</button>
+                            <button 
+                              onClick={quitMission}
+                              className="bg-slate-800 hover:bg-red-500/20 text-slate-500 hover:text-red-400 p-2 rounded-xl transition-all"
+                              title="Quit Mission"
+                            ><LogOut className="w-4 h-4" /></button>
+                          </div>
+                       </div>
+                    )}
 
-                  <MissionSelector 
-                    selectedTrack={selectedTrack} 
-                    missions={activeMissions} 
-                    onSelectMission={handleMissionSelect} 
-                    completedMissionIds={currentProfile.completedMissions} 
-                  />
-                </div>
-              ) : (
-                <div className="hidden lg:flex lg:col-span-2 flex-col items-center justify-center p-12 text-center border-2 border-dashed border-slate-800 rounded-3xl opacity-40">
-                   <RocketIcon className="w-20 h-20 text-slate-700 mb-4" />
-                   <h3 className="text-xl font-fredoka">Select a track to see missions</h3>
-                   <p className="text-sm">Your AI journey starts with a single step!</p>
-                </div>
-              )}
+                    <MissionSelector 
+                      selectedTrack={selectedTrack} 
+                      missions={activeMissions} 
+                      onSelectMission={handleMissionSelect} 
+                      completedMissionIds={currentProfile.completedMissions} 
+                    />
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-slate-800 rounded-[2.5rem] bg-slate-900/50">
+                     <div className="p-6 bg-slate-800 rounded-full mb-6 opacity-40">
+                        <RocketIcon className="w-16 h-16 text-slate-600" />
+                     </div>
+                     <h3 className="text-xl font-fredoka text-slate-400 mb-2">Ready for Lift Off?</h3>
+                     <p className="text-sm text-slate-600 max-w-xs">Select an AI learning track on the left to begin your guided exploration.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -417,7 +424,6 @@ const App: React.FC = () => {
   );
 };
 
-// Simple internal icon component
 const RocketIcon = ({className}: {className?: string}) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

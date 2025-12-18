@@ -79,6 +79,15 @@ export const MISSIONS_KIDS: Mission[] = [
     "sample_activity_idea": "Student picks a genre and AI offers three plot ideas; student chooses one and writes part of the story with AI suggesting options at key points."
   },
   {
+    "id": "stories-3",
+    "track": "Creative Stories",
+    "title": "The Infinite Genre Mashup",
+    "level": 2,
+    "duration_minutes": 25,
+    "goal": "Explore creativity by combining two unrelated genres into a single coherent scene.",
+    "sample_activity_idea": "Mix 'Western' with 'Cyberpunk' or 'Medieval' with 'Space Opera'. Have AI help weave the disparate elements together."
+  },
+  {
     "id": "images-1",
     "track": "Creative Images",
     "title": "Describe a World So AI Can See It",
@@ -124,6 +133,15 @@ export const MISSIONS_KIDS: Mission[] = [
     "sample_activity_idea": "Take a scene (e.g., a skateboard trick) and add directions like 'slow motion' or 'zoom in' to change the feel."
   },
   {
+    "id": "video-3",
+    "track": "Video",
+    "title": "Storyboard Master",
+    "level": 2,
+    "duration_minutes": 30,
+    "goal": "Learn how to describe a sequence of events for a multi-shot story.",
+    "sample_activity_idea": "Describe three connected shots: a wide establishing shot, a medium character shot, and a close-up reaction shot."
+  },
+  {
     "id": "music-1",
     "track": "Music",
     "title": "How AI Can Help Make Music",
@@ -138,8 +156,17 @@ export const MISSIONS_KIDS: Mission[] = [
     "title": "Design Your First AI Music Prompts",
     "level": 2,
     "duration_minutes": 30,
-    "goal": "Help the student write several detailed prompts they could paste into an external AI music generator (without actually generating audio here).",
-    "sample_activity_idea": "Student picks a theme (e.g. 'boss fight', 'chill study', 'happy intro'); AI guides them to specify genre, instruments, tempo, mood and structure for 2–3 prompts."
+    "goal": "Help the student write several detailed prompts they could paste into an external AI music generator.",
+    "sample_activity_idea": "Student picks a theme (e.g. 'boss fight', 'chill study', 'happy intro'); AI guides them to specify genre, instruments, tempo, mood and structure."
+  },
+  {
+    "id": "music-3",
+    "track": "Music",
+    "title": "Sound Effect Sorcerer",
+    "level": 1,
+    "duration_minutes": 15,
+    "goal": "Understand how to describe non-musical sounds for games or movies.",
+    "sample_activity_idea": "Describe a 'magic portal opening' or a 'giant robot footstep' using textures, materials, and emotions."
   },
   {
     "id": "coding-1",
@@ -157,7 +184,16 @@ export const MISSIONS_KIDS: Mission[] = [
     "level": 2,
     "duration_minutes": 25,
     "goal": "Learn how AI can spot mistakes in code that are hard for humans to see.",
-    "sample_activity_idea": "Coach provides a simple code with a typo (missing semicolon or bracket). Student asks AI to find the error and explain the fix."
+    "sample_activity_idea": "Coach provides a simple code with a typo. Student asks AI to find the error and explain the fix."
+  },
+  {
+    "id": "coding-3",
+    "track": "Coding",
+    "title": "Turtle Art AI",
+    "level": 2,
+    "duration_minutes": 25,
+    "goal": "Use code to draw shapes and patterns on the screen.",
+    "sample_activity_idea": "Have AI generate Python Turtle code to draw a colorful snowflake or a spiral of squares."
   },
   {
     "id": "research-1",
@@ -166,7 +202,7 @@ export const MISSIONS_KIDS: Mission[] = [
     "level": 1,
     "duration_minutes": 15,
     "goal": "Use AI to simplify complex school topics into easy-to-understand language.",
-    "sample_activity_idea": "Pick a hard topic (e.g., Black Holes, Photosynthesis) and ask AI to explain it using a specific analogy (like 'compare it to a kitchen')."
+    "sample_activity_idea": "Pick a hard topic (e.g., Black Holes) and ask AI to explain it using a specific analogy (like 'compare it to a kitchen')."
   },
   {
     "id": "research-2",
@@ -175,7 +211,16 @@ export const MISSIONS_KIDS: Mission[] = [
     "level": 2,
     "duration_minutes": 20,
     "goal": "Turn study notes into a fun quiz to help prepare for a test.",
-    "sample_activity_idea": "Paste a paragraph from a history book or science article and ask AI to generate 3 multiple-choice questions to test your knowledge."
+    "sample_activity_idea": "Paste a paragraph and ask AI to generate 3 multiple-choice questions to test your knowledge."
+  },
+  {
+    "id": "research-3",
+    "track": "Research",
+    "title": "The Fact Check Challenge",
+    "level": 2,
+    "duration_minutes": 20,
+    "goal": "Learn how to spot 'hallucinations' and use AI to verify facts.",
+    "sample_activity_idea": "AI gives 3 statements about history (one is wrong). Student uses AI to help figure out which one is the fake."
   },
   {
     "id": "data-1",
@@ -184,7 +229,7 @@ export const MISSIONS_KIDS: Mission[] = [
     "level": 1,
     "duration_minutes": 20,
     "goal": "Learn how AI can scan information to find facts and count things quickly.",
-    "sample_activity_idea": "Paste a messy list of class pets (e.g. 'dog, cat, dog, hamster, dog') and ask AI to count them and make a chart."
+    "sample_activity_idea": "Paste a messy list of class pets and ask AI to count them and make a chart."
   },
   {
     "id": "data-2",
@@ -193,7 +238,16 @@ export const MISSIONS_KIDS: Mission[] = [
     "level": 2,
     "duration_minutes": 25,
     "goal": "Teach AI to organize messy information into neat, readable tables.",
-    "sample_activity_idea": "Write a paragraph about 3 superheroes (names, powers, colors). Ask AI to turn it into a clean table."
+    "sample_activity_idea": "Write a paragraph about 3 superheroes. Ask AI to turn it into a clean table."
+  },
+  {
+    "id": "data-3",
+    "track": "Data",
+    "title": "Emoji Data Science",
+    "level": 1,
+    "duration_minutes": 15,
+    "goal": "Visualize trends using only emojis to make data fun and visual.",
+    "sample_activity_idea": "Translate a week's worth of weather data into emoji strings and explain the patterns found."
   },
   {
     "id": "automation-1",
@@ -202,7 +256,25 @@ export const MISSIONS_KIDS: Mission[] = [
     "level": 1,
     "duration_minutes": 20,
     "goal": "Understand how to give instructions in a specific order, just like programming a robot.",
-    "sample_activity_idea": "Write a numbered list of instructions for 'Making a Sandwich' and ask AI to find any missing steps (e.g., 'you forgot to open the bread bag')."
+    "sample_activity_idea": "Write instructions for 'Making a Sandwich' and ask AI to find any missing steps."
+  },
+  {
+    "id": "automation-2",
+    "track": "Automation",
+    "title": "The Morning Routine Machine",
+    "level": 1,
+    "duration_minutes": 20,
+    "goal": "Design a series of IF/THEN rules to optimize a daily routine.",
+    "sample_activity_idea": "Create rules like 'If it is raining, THEN remind me to grab my umbrella' to build an automated morning plan."
+  },
+  {
+    "id": "automation-3",
+    "track": "Automation",
+    "title": "Smart Assistant Designer",
+    "level": 2,
+    "duration_minutes": 25,
+    "goal": "Plan how a smart speaker should react to different voice commands.",
+    "sample_activity_idea": "Design a 'Home Library Assistant' that knows where every book is and can recommend new ones based on mood."
   },
   {
     "id": "business-1",
@@ -211,7 +283,25 @@ export const MISSIONS_KIDS: Mission[] = [
     "level": 1,
     "duration_minutes": 25,
     "goal": "Brainstorm a fun small business idea and create a name and slogan using AI.",
-    "sample_activity_idea": "Think of a service (like dog walking or washing cars). Ask AI to give you 5 catchy names and a slogan for your business card."
+    "sample_activity_idea": "Think of a service like dog walking. Ask AI to give you 5 catchy names and a slogan."
+  },
+  {
+    "id": "business-2",
+    "track": "Business",
+    "title": "Logo Concept Lab",
+    "level": 1,
+    "duration_minutes": 20,
+    "goal": "Learn how to describe visual branding elements for a new business.",
+    "sample_activity_idea": "Pick a business and decide on its colors, fonts, and core symbols. Ask AI to describe the perfect logo."
+  },
+  {
+    "id": "business-3",
+    "track": "Business",
+    "title": "The Perfect Pitch",
+    "level": 2,
+    "duration_minutes": 25,
+    "goal": "Learn how to explain your business idea clearly to convince others to help you.",
+    "sample_activity_idea": "Write a 30-second 'elevator pitch' for your business with AI helping to make it sound exciting and professional."
   },
   {
     "id": "project-1",
@@ -219,8 +309,26 @@ export const MISSIONS_KIDS: Mission[] = [
     "title": "Plan Your Own AI Helper",
     "level": 2,
     "duration_minutes": 35,
-    "goal": "Guide the student to design a simple AI helper concept (e.g. homework coach, idea generator, or music buddy).",
-    "sample_activity_idea": "Student chooses a problem they have (e.g. starting homework, coming up with song ideas); AI helps them describe what the helper should do, what rules it should follow, and what good and bad behaviour look like."
+    "goal": "Guide the student to design a simple AI helper concept.",
+    "sample_activity_idea": "Student chooses a problem (e.g. starting homework); AI helps them describe what the helper should do."
+  },
+  {
+    "id": "project-2",
+    "track": "Projects",
+    "title": "AI for Planet Earth",
+    "level": 2,
+    "duration_minutes": 30,
+    "goal": "Imagine an AI project that helps protect nature or animals.",
+    "sample_activity_idea": "Design a 'Forest Guardian AI' that listens for chainsaws and alerts park rangers, or a 'Trash Sorter Bot'."
+  },
+  {
+    "id": "project-3",
+    "track": "Projects",
+    "title": "The Ultimate Hobby Helper",
+    "level": 2,
+    "duration_minutes": 30,
+    "goal": "Plan an AI that makes your favorite hobby (gaming, sports, art) even better.",
+    "sample_activity_idea": "Design a 'Drawing Coach AI' that gives you 5-minute sketching challenges every day."
   }
 ];
 
@@ -231,8 +339,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "How LLMs Actually Work",
     "level": 1,
     "duration_minutes": 15,
-    "goal": "Understand the mechanism of Large Language Models (tokens, probability, training data) to demystify the 'magic'.",
-    "sample_activity_idea": "Explain the concept of 'next token prediction' using a sentence completion game, then discuss how this leads to both creativity and hallucinations."
+    "goal": "Understand the mechanism of Large Language Models (tokens, probability) to demystify the 'magic'.",
+    "sample_activity_idea": "Explain 'next token prediction' using a sentence completion game."
   },
   {
     "id": "adult-basics-2",
@@ -241,7 +349,16 @@ export const MISSIONS_ADULTS: Mission[] = [
     "level": 1,
     "duration_minutes": 15,
     "goal": "Learn why AI fabricates information and practical techniques to verify outputs.",
-    "sample_activity_idea": "Analyze a scenario where AI might hallucinate (e.g., obscure court cases or citations) and practice verification strategies."
+    "sample_activity_idea": "Analyze a scenario where AI might hallucinate and practice verification strategies."
+  },
+  {
+    "id": "adult-basics-3",
+    "track": "Basics",
+    "title": "The Ethics of AI & Bias",
+    "level": 1,
+    "duration_minutes": 20,
+    "goal": "Examine how training data can inherit human biases and the importance of critical evaluation.",
+    "sample_activity_idea": "Discuss real-world examples of algorithmic bias and how users can spot and report them."
   },
   {
     "id": "adult-prompts-1",
@@ -249,8 +366,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Prompt Engineering: The SPACE Framework",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Master the SPACE framework (Subject, Purpose, Audience, Context, Extras) to eliminate ambiguity and get 10x better results.",
-    "sample_activity_idea": "Take a vague request (e.g., 'write a sales post') and rebuild it using Subject, Purpose, Audience, Context, and Extras to see the massive quality jump."
+    "goal": "Master the SPACE framework to eliminate ambiguity.",
+    "sample_activity_idea": "Rebuild a vague request into a high-quality prompt using Subject, Purpose, Audience, Context, and Extras."
   },
   {
     "id": "adult-prompts-2",
@@ -258,8 +375,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Chain-of-Thought Reasoning",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Unlock the model's reasoning capabilities by asking it to 'think step-by-step' before answering.",
-    "sample_activity_idea": "Give the AI a trick question or logic puzzle. First, get a quick answer (often wrong). Then, use the magic phrase 'Let's think step by step' to correct it."
+    "goal": "Unlock reasoning by asking it to 'think step-by-step'.",
+    "sample_activity_idea": "Give AI a logic puzzle and use the magic phrase 'Let's think step by step' to get a correct solution."
   },
   {
     "id": "adult-prompts-3",
@@ -267,8 +384,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Few-Shot Prompting",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Improve reliability by providing examples (shots) within the prompt before asking the question.",
-    "sample_activity_idea": "Create a prompt to classify customer feedback. First, fail with zero-shot. Then, add 3 examples of (Input -> Classification) and see the improved accuracy."
+    "goal": "Improve reliability by providing examples (shots) within the prompt.",
+    "sample_activity_idea": "Create a feedback classifier prompt with 3 examples of inputs and outputs."
   },
   {
     "id": "adult-prompts-4",
@@ -276,8 +393,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Exploring Prompt Variations",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Experiment with different phrasing and structures for the same request to understand their impact on AI output.",
-    "sample_activity_idea": "Take a core prompt and generate 3 variations by changing sentence structure, word choice, or adding/removing details. Analyze the differences in the AI responses."
+    "goal": "Experiment with different phrasing to understand its impact.",
+    "sample_activity_idea": "Take a core prompt and generate 3 variations, analyzing the differences in AI output."
   },
   {
     "id": "adult-stories-1",
@@ -285,8 +402,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Professional Copywriting Partner",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Use AI to brainstorm variations of marketing copy, headlines, or bio text.",
-    "sample_activity_idea": "Draft a LinkedIn bio or product tagline. After the initial copy is generated, ask the AI for variations in tone or style (e.g., witty, corporate, humble)."
+    "goal": "Use AI to brainstorm variations of marketing copy or headlines.",
+    "sample_activity_idea": "Draft a LinkedIn bio and ask AI for variations in tone (witty, corporate, humble)."
   },
   {
     "id": "adult-stories-2",
@@ -294,8 +411,17 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Overcoming Writer's Block",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Use AI to outline plots, generate character backstories, or expand on rough bullet points.",
-    "sample_activity_idea": "Start with a rough premise for a short story. Have the AI generate a chapter outline and character sheets."
+    "goal": "Use AI to outline plots or generate character backstories.",
+    "sample_activity_idea": "Start with a rough premise and have AI generate a chapter outline and character sheets."
+  },
+  {
+    "id": "adult-stories-3",
+    "track": "Creative Stories",
+    "title": "Narrative Tone & Voice Matching",
+    "level": 2,
+    "duration_minutes": 25,
+    "goal": "Learn how to prompt AI to mimic a specific existing brand voice or writing style.",
+    "sample_activity_idea": "Provide a sample paragraph and ask AI to analyze its style, then write a new announcement in that same voice."
   },
   {
     "id": "adult-images-1",
@@ -303,8 +429,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Photorealistic Prompting Techniques",
     "level": 2,
     "duration_minutes": 20,
-    "goal": "Learn technical terms (lighting, aperture, film stock) to control image generation style.",
-    "sample_activity_idea": "Construct a prompt for a portrait, adding specific lighting (e.g., 'rembrandt lighting') and camera details to observe stylistic changes."
+    "goal": "Learn technical terms (lighting, aperture, film stock) to control style.",
+    "sample_activity_idea": "Construct a prompt for a portrait adding 'Rembrandt lighting' and camera details."
   },
   {
     "id": "adult-images-2",
@@ -312,8 +438,17 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Consistent Character Generation",
     "level": 2,
     "duration_minutes": 30,
-    "goal": "Techniques for maintaining character identity across multiple generated images (seeds, detailed descriptors).",
-    "sample_activity_idea": "Create a detailed character profile prompt. Then, generate variations of that character in different environments (cafe, spaceship) without losing their identity."
+    "goal": "Techniques for maintaining identity across multiple images.",
+    "sample_activity_idea": "Create a character profile and generate that character in different environments."
+  },
+  {
+    "id": "adult-images-3",
+    "track": "Creative Images",
+    "title": "Architectural & Interior Design AI",
+    "level": 2,
+    "duration_minutes": 25,
+    "goal": "Use specific terminology to describe spaces, materials, and structural layouts.",
+    "sample_activity_idea": "Prompt for a 'Mid-century modern living room with floor-to-ceiling glass and oak accents' and iterate on the lighting."
   },
   {
     "id": "adult-video-1",
@@ -321,8 +456,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Text-to-Video Fundamentals",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Understand the current state of generative video: possibilities, physics hallucinations, and temporal consistency.",
-    "sample_activity_idea": "Draft a prompt for a surreal scene (e.g., 'clouds turning into cotton candy'). Discuss how AI morphing logic differs from traditional animation."
+    "goal": "Understand generative video: possibilities and physics hallucinations.",
+    "sample_activity_idea": "Draft a prompt for a surreal scene and discuss how AI morphing logic differs from animation."
   },
   {
     "id": "adult-video-2",
@@ -330,8 +465,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Cinematic Prompting for Video",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Apply film terminology (dolly shot, rack focus, golden hour) to generate high-quality AI video outputs.",
-    "sample_activity_idea": "Take a static concept like 'a busy city street'. Rewrite the prompt to be a 'drone shot at night with neon lighting and timelapse movement'."
+    "goal": "Apply film terminology to generate high-quality outputs.",
+    "sample_activity_idea": "Rewrite a prompt to be a 'drone shot at night with neon lighting and timelapse movement'."
   },
   {
     "id": "adult-video-3",
@@ -339,8 +474,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "AI Video Editing Essentials",
     "level": 3,
     "duration_minutes": 35,
-    "goal": "Understand how AI assists in tasks like scene detection, auto-captioning, and color correction in video post-production.",
-    "sample_activity_idea": "Provide a short video clip and ask AI to identify the key scenes, generate subtitles, or suggest color grading adjustments."
+    "goal": "Understand how AI assists in tasks like scene detection and auto-captioning.",
+    "sample_activity_idea": "Analyze a short clip and ask AI to identify scenes or generate subtitles."
   },
   {
     "id": "adult-music-1",
@@ -348,8 +483,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "AI as a Songwriting Collaborator",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Use text AI to generate rhyme schemes, song structures, and chord progression ideas.",
-    "sample_activity_idea": "Input a theme and genre. Ask AI to suggest a Verse-Chorus structure and a chord progression (e.g., I-V-vi-IV) to match the mood."
+    "goal": "Use AI to generate rhyme schemes and chord progression ideas.",
+    "sample_activity_idea": "Ask AI to suggest a Verse-Chorus structure and a chord progression for a specified mood."
   },
   {
     "id": "adult-music-2",
@@ -357,8 +492,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "AI as a Music Producer Assistant",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Explore how AI tools assist with technical production tasks like stem separation, mastering, and sound design.",
-    "sample_activity_idea": "Simulate a production session: Ask the AI for specific EQ settings for a \"muddy\" vocal or to describe a synth patch for a retrowave bassline."
+    "goal": "Explore technical tasks like sound design and mastering suggestions.",
+    "sample_activity_idea": "Ask AI for EQ settings for a 'muddy' vocal or a synth patch description."
   },
   {
     "id": "adult-music-3",
@@ -366,8 +501,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Ethical Considerations in AI Music",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Discuss the legal and ethical landscape of AI music, including copyright, deepfakes, and artist compensation.",
-    "sample_activity_idea": "Analyze a scenario: 'Is it fair to release a song with an AI-cloned voice of a deceased artist?' and list pros/cons."
+    "goal": "Discuss legal landscapes including copyright and deepfakes.",
+    "sample_activity_idea": "Analyze a deepfake scenario and list the pros and cons for the music industry."
   },
   {
     "id": "adult-coding-1",
@@ -375,8 +510,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Code Explanation & Debugging",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Use AI to explain complex code snippets in plain English and find simple bugs.",
-    "sample_activity_idea": "Paste a confusing block of code (e.g., a regex or a nested loop) and ask the AI to explain it line-by-line."
+    "goal": "Use AI to explain complex code snippets in plain English.",
+    "sample_activity_idea": "Paste a confusing block of code and ask AI to explain it line-by-line."
   },
   {
     "id": "adult-coding-2",
@@ -384,8 +519,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Regex Rescue",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Learn how to use AI to generate complex Regular Expressions for data validation.",
-    "sample_activity_idea": "Describe a text pattern (e.g., 'extract all email addresses ending in .edu') and have AI generate the Regex string."
+    "goal": "Generate complex Regular Expressions for data validation.",
+    "sample_activity_idea": "Describe a text pattern and have AI generate the Regex string."
   },
   {
     "id": "adult-coding-3",
@@ -393,8 +528,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Advanced Debugging with AI",
     "level": 3,
     "duration_minutes": 30,
-    "goal": "Master advanced AI techniques for identifying and resolving complex bugs and performance bottlenecks.",
-    "sample_activity_idea": "Analyze a code snippet with a subtle race condition or memory leak. Ask AI to identify the issue, explain the root cause, and propose a specific fix."
+    "goal": "Master techniques for identifying complex bugs and bottlenecks.",
+    "sample_activity_idea": "Analyze a snippet with a subtle race condition and ask AI for the fix."
   },
   {
     "id": "adult-coding-4",
@@ -402,8 +537,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "AI for Code Refactoring",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Learn how AI can assist in restructuring and improving existing code for better readability and maintainability.",
-    "sample_activity_idea": "Provide a working but messy function (spaghetti code). Ask AI to refactor it into smaller, cleaner functions and apply modern syntax."
+    "goal": "Restructure existing code for better maintainability.",
+    "sample_activity_idea": "Refactor a messy function into smaller, cleaner sub-functions."
   },
   {
     "id": "adult-research-1",
@@ -411,8 +546,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Academic Synthesizer",
     "level": 2,
     "duration_minutes": 30,
-    "goal": "Use AI to summarize multiple viewpoints or long documents into a cohesive overview.",
-    "sample_activity_idea": "Simulate a research task: 'Summarize the pros and cons of remote work from these three different perspectives' (user provides mock text)."
+    "goal": "Summarize multiple viewpoints or long documents efficiently.",
+    "sample_activity_idea": "Summarize the pros and cons of remote work from three different perspectives."
   },
   {
     "id": "adult-research-2",
@@ -420,8 +555,17 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "The Socratic Tutor",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Configure AI to ask *you* questions to test your understanding of a new topic.",
-    "sample_activity_idea": "Tell AI you want to learn about 'Game Theory' and ask it to quiz you with increasingly difficult questions."
+    "goal": "Configure AI to quiz you to test your understanding.",
+    "sample_activity_idea": "Ask AI to quiz you with increasingly difficult questions about Game Theory."
+  },
+  {
+    "id": "adult-research-3",
+    "track": "Research",
+    "title": "Synthesizing Conflicting Data",
+    "level": 3,
+    "duration_minutes": 35,
+    "goal": "Learn how to manage and reconcile contradictory information from multiple sources.",
+    "sample_activity_idea": "Provide two articles with opposite conclusions on a topic and ask AI to map out the common ground and key points of divergence."
   },
   {
     "id": "adult-data-1",
@@ -429,8 +573,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Spreadsheet Formula Pro",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Use AI to generate complex Excel or Google Sheets formulas from plain English descriptions.",
-    "sample_activity_idea": "Describe a scenario: 'Sum column A if Column B says Paid and Column C is after 2023'. Get the formula."
+    "goal": "Generate complex Excel formulas from plain English.",
+    "sample_activity_idea": "Describe a conditional sum scenario and get the exact formula needed."
   },
   {
     "id": "adult-data-2",
@@ -438,8 +582,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Data Cleaning Assistant",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Leverage AI to reformat, correct, and standardize messy text datasets.",
-    "sample_activity_idea": "Paste a list of names with mixed capitalization and spacing. Ask AI to format them as 'Last Name, First Name' in a CSV format."
+    "goal": "Leverage AI to reformat and standardize messy datasets.",
+    "sample_activity_idea": "Paste a messy list of names and ask AI to format them as 'Last Name, First Name' for CSV."
   },
   {
     "id": "adult-data-3",
@@ -447,8 +591,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Qualitative Analysis",
     "level": 3,
     "duration_minutes": 30,
-    "goal": "Analyze unstructured text data (like survey responses) to identify common themes and sentiment.",
-    "sample_activity_idea": "Paste 5 varied customer reviews. Ask AI to tag each with sentiment and extract the core feature request."
+    "goal": "Analyze unstructured text data to identify themes.",
+    "sample_activity_idea": "Paste 5 varied reviews and ask AI to tag sentiment and extract core requests."
   },
   {
     "id": "adult-automation-1",
@@ -456,8 +600,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Unstructured Data to JSON",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Learn how AI can parse messy text (emails, notes) into structured data formats for databases.",
-    "sample_activity_idea": "Paste a messy paragraph of customer feedback and ask AI to extract 'Sentiment', 'Product Name', and 'Action Required' into a JSON object."
+    "goal": "Parse messy text into structured formats for databases.",
+    "sample_activity_idea": "Paste feedback and ask AI to extract 'Sentiment' and 'Action Required' into JSON."
   },
   {
     "id": "adult-automation-2",
@@ -465,8 +609,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "AI for Process Optimization",
     "level": 2,
     "duration_minutes": 30,
-    "goal": "Analyze and suggest improvements for common business workflows using AI principles.",
-    "sample_activity_idea": "Describe a typical workflow (e.g., onboarding a new employee) and ask AI to identify bottlenecks and suggest automated solutions."
+    "goal": "Suggest improvements for business workflows.",
+    "sample_activity_idea": "Describe a hiring workflow and ask AI to identify bottlenecks."
   },
   {
     "id": "adult-automation-3",
@@ -474,8 +618,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Scripting with AI Assistants",
     "level": 1,
     "duration_minutes": 25,
-    "goal": "Learn how AI can help write simple scripts (Python, Bash) to automate repetitive tasks.",
-    "sample_activity_idea": "Ask AI to write a Python script that renames all files in a folder based on a pattern."
+    "goal": "Write simple scripts to automate repetitive tasks.",
+    "sample_activity_idea": "Ask AI to write a Python script that renames files based on a pattern."
   },
   {
     "id": "adult-automation-4",
@@ -483,8 +627,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "AI for Productivity Hacks",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Discover AI tools and techniques to streamline daily tasks and boost personal efficiency.",
-    "sample_activity_idea": "Ask the AI to recommend 3 AI tools or strategies that can help manage email overload or schedule meetings more effectively."
+    "goal": "Discover tools to boost personal efficiency.",
+    "sample_activity_idea": "Ask AI to recommend 3 strategies to manage email overload."
   },
   {
     "id": "adult-automation-5",
@@ -492,8 +636,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "AI for Time Management",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Leverage AI to optimize daily schedules, prioritize tasks, and improve time blocking techniques.",
-    "sample_activity_idea": "Ask AI to create an optimized schedule for a busy student balancing classes, study, and extracurriculars, including realistic time blocks."
+    "goal": "Leverage AI to optimize schedules and task prioritization.",
+    "sample_activity_idea": "Ask AI to create an optimized schedule for a busy student with milestones."
   },
   {
     "id": "adult-business-1",
@@ -501,8 +645,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Strategic Decision Making (SWOT)",
     "level": 2,
     "duration_minutes": 30,
-    "goal": "Use AI to facilitate a SWOT analysis for a project, product, or business decision.",
-    "sample_activity_idea": "Describe a business idea or a career decision. Ask AI to generate a detailed SWOT analysis (Strengths, Weaknesses, Opportunities, Threats) to uncover blind spots."
+    "goal": "Use AI to facilitate a SWOT analysis for a project.",
+    "sample_activity_idea": "Describe a business idea and ask AI to generate a detailed SWOT analysis."
   },
   {
     "id": "adult-business-2",
@@ -510,8 +654,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "High-Stakes Communication",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Draft, refine, and role-play difficult professional emails or negotiation scripts.",
-    "sample_activity_idea": "Draft a rough email asking for a raise or addressing a conflict. Ask AI to rewrite it to be 'firm but professional' or 'empathetic and collaborative'."
+    "goal": "Draft and role-play difficult professional emails.",
+    "sample_activity_idea": "Rewrite a request for a raise to be 'firm but professional'."
   },
   {
     "id": "adult-business-3",
@@ -519,8 +663,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Meeting Intelligence",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Learn how to use AI to summarize messy meeting notes into clean agendas or action items.",
-    "sample_activity_idea": "Paste a stream-of-consciousness transcript of a brainstorming session. Ask AI to extract a structured list of Action Items with owners and deadlines."
+    "goal": "Summarize messy notes into clean action items.",
+    "sample_activity_idea": "Paste a transcript and ask AI to extract a list of action items with deadlines."
   },
   {
     "id": "adult-project-1",
@@ -528,8 +672,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "The Productivity Accelerator",
     "level": 1,
     "duration_minutes": 30,
-    "goal": "Build a workflow for summarizing long documents, drafting emails, and organizing notes.",
-    "sample_activity_idea": "Simulate a busy inbox scenario. create a system prompt that categorizes emails and drafts appropriate short responses."
+    "goal": "Build a workflow for summarizing and drafting.",
+    "sample_activity_idea": "Create a system prompt that categorizes emails and drafts responses."
   },
   {
     "id": "adult-project-2",
@@ -537,8 +681,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Coding Companion 101",
     "level": 2,
     "duration_minutes": 35,
-    "goal": "Learn how to use AI to explain code, debug errors, and write simple scripts.",
-    "sample_activity_idea": "Take a snippet of code with a bug (or a regex). Ask AI to explain what it does, find the error, and rewrite it with comments."
+    "goal": "Learn how to use AI to explain and debug code.",
+    "sample_activity_idea": "Explain a code snippet, find the error, and rewrite it with comments."
   },
   {
     "id": "adult-project-3",
@@ -546,8 +690,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "AI as a Virtual Tutor",
     "level": 2,
     "duration_minutes": 40,
-    "goal": "Design and plan a personalized AI tutor for a specific learning need, outlining its features and interactive elements.",
-    "sample_activity_idea": "Define a learning goal (e.g., learning a new language, mastering a programming concept). Then, outline the key features of an AI tutor that would best achieve this goal, considering interactive exercises and feedback mechanisms."
+    "goal": "Design a personalized AI tutor for a specific learning need.",
+    "sample_activity_idea": "Outline features for an AI tutor that teaches a new language."
   },
   {
     "id": "adult-project-4",
@@ -555,8 +699,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "AI for Personal Learning Plans",
     "level": 1,
     "duration_minutes": 30,
-    "goal": "Outline a personalized learning roadmap for any subject using AI, identifying key resources and milestones.",
-    "sample_activity_idea": "Choose a new skill (e.g., 'Learn Spanish' or 'Understand Crypto'). Ask AI to generate a 4-week study plan with daily tasks and free online resources."
+    "goal": "Outline a personalized learning roadmap.",
+    "sample_activity_idea": "Generate a 4-week study plan for 'Understand Crypto' with daily tasks."
   },
   {
     "id": "adult-project-5",
@@ -564,8 +708,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Building a Basic AI Agent",
     "level": 3,
     "duration_minutes": 45,
-    "goal": "Conceptualize and plan a simple AI agent that can perform a series of automated tasks based on user triggers.",
-    "sample_activity_idea": "Draft a flow for a 'News Aggregator Agent': Trigger (New topic) -> Action (Search news) -> Action (Summarize top 3 articles) -> Output (Send Slack message)."
+    "goal": "Conceptualize an AI agent that performs automated tasks.",
+    "sample_activity_idea": "Draft a flow for a 'News Aggregator Agent' with search and summary actions."
   }
 ];
 

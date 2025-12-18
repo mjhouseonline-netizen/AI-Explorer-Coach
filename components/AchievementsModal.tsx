@@ -14,7 +14,6 @@ interface AchievementsModalProps {
 export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, onClose, completedMissions, allMissions }) => {
   if (!isOpen) return null;
 
-  // Calculate track progress
   const trackStatus = TRACKS.map(track => {
     const trackMissions = allMissions.filter(m => m.track === track);
     const completedCount = trackMissions.filter(m => completedMissions.includes(m.id)).length;
@@ -30,67 +29,65 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
   const totalBadges = trackStatus.filter(t => t.isComplete).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-fadeIn">
+      <div className="bg-slate-900 border border-slate-700 rounded-[2rem] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
         
-        {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
+        <div className="p-6 md:p-8 border-b border-slate-800 flex justify-between items-start md:items-center bg-slate-800/30">
           <div>
-            <h2 className="text-2xl font-fredoka font-bold text-white flex items-center gap-3">
-              <Award className="w-8 h-8 text-yellow-400" />
+            <h2 className="text-xl md:text-2xl font-fredoka font-bold text-white flex items-center gap-3">
+              <Award className="w-7 h-7 md:w-8 md:h-8 text-yellow-400" />
               Achievements Gallery
             </h2>
-            <p className="text-slate-400 text-sm mt-1">
-              Master a track to unlock its Badge. You have {totalBadges} / {TRACKS.length} badges.
+            <p className="text-slate-400 text-xs md:text-sm mt-1 font-medium">
+              You've unlocked <span className="text-yellow-400 font-bold">{totalBadges}</span> / {TRACKS.length} master badges.
             </p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white">
-            <X className="w-6 h-6" />
+          <button onClick={onClose} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white shrink-0">
+            <X className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
 
-        {/* Grid */}
-        <div className="p-6 overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="p-6 md:p-8 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 scrollbar-hide">
           {trackStatus.map(({ track, isComplete, progress }) => (
             <div 
               key={track}
               className={`
-                relative p-4 rounded-xl border flex flex-col items-center justify-center text-center gap-3 aspect-square transition-all
+                relative p-4 md:p-6 rounded-3xl border flex flex-col items-center justify-center text-center gap-3 aspect-square transition-all
                 ${isComplete 
-                  ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-yellow-500/50 shadow-lg shadow-yellow-900/20' 
-                  : 'bg-slate-900/50 border-slate-800 grayscale opacity-70'
+                  ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-yellow-500/40 shadow-xl shadow-yellow-900/10' 
+                  : 'bg-slate-800/20 border-slate-800 grayscale opacity-40'
                 }
               `}
             >
               <div className={`
-                w-16 h-16 rounded-full flex items-center justify-center mb-2 transition-transform duration-500
-                ${isComplete ? 'bg-gradient-to-br from-yellow-400 to-orange-500 scale-110' : 'bg-slate-800'}
+                w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-1 transition-transform duration-700
+                ${isComplete ? 'bg-gradient-to-br from-yellow-400 to-orange-500 scale-110 shadow-lg shadow-yellow-500/20' : 'bg-slate-800'}
               `}>
                 {isComplete ? (
-                   <Award className="w-8 h-8 text-white animate-bounce" style={{ animationDuration: '3s' }} />
+                   <Award className="w-6 h-6 md:w-8 md:h-8 text-white animate-pulse" />
                 ) : (
-                   <Lock className="w-6 h-6 text-slate-600" />
+                   <Lock className="w-5 h-5 md:w-6 md:h-6 text-slate-600" />
                 )}
               </div>
               
-              <div>
-                <h3 className={`font-bold font-fredoka ${isComplete ? 'text-yellow-400' : 'text-slate-500'}`}>
-                  {track} Master
+              <div className="space-y-1">
+                <h3 className={`text-xs md:text-sm font-black font-fredoka uppercase tracking-wide leading-tight ${isComplete ? 'text-yellow-400' : 'text-slate-500'}`}>
+                  {track}
                 </h3>
-                <span className="text-xs text-slate-500 mt-1 block font-mono">
-                  {isComplete ? 'UNLOCKED' : `${progress} Missions`}
+                <span className="text-[10px] font-black text-slate-500 block opacity-80">
+                  {isComplete ? 'MASTERED' : progress}
                 </span>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="p-4 border-t border-slate-800 bg-slate-900 text-center">
+        <div className="p-4 md:p-6 border-t border-slate-800 bg-slate-900/50 text-center">
             <button 
                 onClick={onClose}
-                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold transition-colors"
+                className="w-full sm:w-auto px-10 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg active:scale-95"
             >
-                Close
+                Done
             </button>
         </div>
       </div>

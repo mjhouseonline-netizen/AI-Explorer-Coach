@@ -12,18 +12,18 @@ interface TrackCardProps {
 }
 
 const ICONS: Record<Track, React.ReactNode> = {
-  'Basics': <Lightbulb className="w-8 h-8" />,
-  'Prompts': <Terminal className="w-8 h-8" />,
-  'Creative Stories': <BookOpen className="w-8 h-8" />,
-  'Creative Images': <ImageIcon className="w-8 h-8" />,
-  'Video': <Film className="w-8 h-8" />,
-  'Music': <Music className="w-8 h-8" />,
-  'Coding': <Code2 className="w-8 h-8" />,
-  'Research': <Search className="w-8 h-8" />,
-  'Data': <BarChart className="w-8 h-8" />,
-  'Automation': <Cpu className="w-8 h-8" />,
-  'Business': <Briefcase className="w-8 h-8" />,
-  'Projects': <Rocket className="w-8 h-8" />,
+  'Basics': <Lightbulb className="w-6 h-6 md:w-8 md:h-8" />,
+  'Prompts': <Terminal className="w-6 h-6 md:w-8 md:h-8" />,
+  'Creative Stories': <BookOpen className="w-6 h-6 md:w-8 md:h-8" />,
+  'Creative Images': <ImageIcon className="w-6 h-6 md:w-8 md:h-8" />,
+  'Video': <Film className="w-6 h-6 md:w-8 md:h-8" />,
+  'Music': <Music className="w-6 h-6 md:w-8 md:h-8" />,
+  'Coding': <Code2 className="w-6 h-6 md:w-8 md:h-8" />,
+  'Research': <Search className="w-6 h-6 md:w-8 md:h-8" />,
+  'Data': <BarChart className="w-6 h-6 md:w-8 md:h-8" />,
+  'Automation': <Cpu className="w-6 h-6 md:w-8 md:h-8" />,
+  'Business': <Briefcase className="w-6 h-6 md:w-8 md:h-8" />,
+  'Projects': <Rocket className="w-6 h-6 md:w-8 md:h-8" />,
 };
 
 const COLORS: Record<Track, string> = {
@@ -55,61 +55,46 @@ export const TrackCard: React.FC<TrackCardProps> = ({
     <button
       onClick={() => onClick(track)}
       className={`
-        relative rounded-2xl text-left transition-all duration-300 shadow-lg group w-full
+        relative rounded-2xl text-left transition-all duration-300 shadow-lg group w-full overflow-hidden
         ${COLORS[track]} text-white
-        ${isSelected ? 'ring-4 ring-white ring-opacity-50 scale-[1.02]' : 'hover:scale-[1.02]'}
+        ${isSelected ? 'ring-4 ring-white ring-opacity-50 scale-[1.01]' : 'hover:scale-[1.01]'}
+        active:scale-[0.98]
       `}
     >
-      {/* Background Icon Container */}
-      <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-        <div className="absolute -right-4 -bottom-4 opacity-20 transform rotate-12 group-hover:scale-125 transition-transform duration-500">
-          {React.cloneElement(ICONS[track] as React.ReactElement, { className: "w-24 h-24" })}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -right-2 -bottom-2 opacity-15 transform rotate-12 group-hover:scale-125 transition-transform duration-500">
+          {React.cloneElement(ICONS[track] as React.ReactElement, { className: "w-20 h-20 md:w-24 md:h-24" })}
         </div>
       </div>
       
-      {/* Content Container */}
-      <div className="relative z-10 flex flex-col gap-2 h-full p-5 md:p-6">
+      <div className="relative z-10 flex flex-col gap-1.5 p-4 md:p-5">
         <div className="flex justify-between items-start">
-          
-          {/* Icon with Tooltip */}
-          <div className="relative group/icon" title={track}>
-            <div className="p-2 bg-white/20 rounded-lg w-fit transition-colors hover:bg-white/30 backdrop-blur-sm">
-              {ICONS[track]}
-            </div>
-            
-            {/* Custom Tooltip */}
-            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-900/95 text-white text-xs font-bold rounded-lg opacity-0 group-hover/icon:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap border border-white/10 shadow-xl backdrop-blur-sm z-[100] translate-x-2 group-hover/icon:translate-x-0">
-              {track}
-            </div>
+          <div className="p-1.5 md:p-2 bg-white/20 rounded-xl transition-colors group-hover:bg-white/30 backdrop-blur-sm">
+            {ICONS[track]}
           </div>
 
-          {/* Progress Badge */}
           <div className={`
-            flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-colors
-            ${isCompleted ? 'bg-white text-emerald-600 shadow-sm' : 'bg-black/20 text-white'}
+            flex items-center gap-1 text-[10px] md:text-xs font-black px-2.5 py-1 rounded-full transition-all
+            ${isCompleted ? 'bg-white text-emerald-600 shadow-lg' : 'bg-black/20 text-white/90'}
           `}>
-            {isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+            {isCompleted && <Check className="w-3 h-3 stroke-[4]" />}
             <span>{completedCount}/{totalCount}</span>
           </div>
         </div>
         
-        <div className="mt-3">
-            <h3 className="text-xl font-bold font-fredoka leading-tight">{track}</h3>
-            <p className="text-sm font-nunito opacity-90 mt-1">
-              {isCompleted ? 'Track completed!' : 'Start your journey'}
+        <div className="mt-1 md:mt-2">
+            <h3 className="text-base md:text-lg font-bold font-fredoka leading-tight tracking-tight">{track}</h3>
+            <p className="text-[10px] md:text-xs font-nunito opacity-80 mt-0.5 font-bold uppercase tracking-wider">
+              {isCompleted ? 'Complete!' : 'Exploration'}
             </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mt-5 w-full h-2 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
+        <div className="mt-3 w-full h-1.5 bg-black/15 rounded-full overflow-hidden backdrop-blur-sm">
           <div 
-            className={`h-full transition-all duration-1000 ease-out ${isCompleted ? 'bg-white' : 'bg-white/90'}`}
+            className={`h-full transition-all duration-1000 ease-out shadow-sm ${isCompleted ? 'bg-white' : 'bg-white/80'}`}
             style={{ width: `${percentage}%` }}
             role="progressbar"
             aria-valuenow={percentage}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={`${track} progress`}
           />
         </div>
       </div>
