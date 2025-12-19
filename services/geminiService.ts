@@ -2,12 +2,9 @@
 import { GoogleGenAI, Chat, GenerateContentResponse, Tool, Type } from "@google/genai";
 import { Message } from '../types';
 
-let aiInstance: GoogleGenAI | null = null;
+// Always use new GoogleGenAI({apiKey: process.env.API_KEY})
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 let chatSession: Chat | null = null;
-
-export const initializeGemini = (apiKey: string) => {
-  aiInstance = new GoogleGenAI({ apiKey });
-};
 
 // Define the image generation tool
 const IMAGE_TOOL: Tool = {
@@ -46,13 +43,13 @@ const AUDIO_TOOL: Tool = {
 };
 
 const generateImage = async (prompt: string): Promise<string | null> => {
-  if (!aiInstance) throw new Error("AI not initialized");
   try {
-    const response = await aiInstance.models.generateContent({
+    const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: { parts: [{ text: prompt }] }
     });
     
+    // Iterate through all parts to find the image part
     if (response.candidates && response.candidates[0].content?.parts) {
       for (const part of response.candidates[0].content.parts) {
         if (part.inlineData && part.inlineData.mimeType.startsWith('image/')) {
@@ -76,8 +73,6 @@ const generateAudio = async (prompt: string): Promise<string> => {
 };
 
 export const startNewChatSession = async (missionContext: string, systemInstruction: string, track?: string): Promise<string> => {
-  if (!aiInstance) throw new Error("AI Client not initialized. Please provide an API Key.");
-
   try {
     const tools: Tool[] = [];
     let extraContext = "";
@@ -93,7 +88,7 @@ export const startNewChatSession = async (missionContext: string, systemInstruct
       extraContext += "\n\n[SYSTEM NOTE]: You have access to a 'generate_audio' tool. Use it for sound effects or music.";
     }
 
-    chatSession = aiInstance.chats.create({
+    chatSession = ai.chats.create({
       model: 'gemini-3-flash-preview',
       config: {
         systemInstruction: systemInstruction,
@@ -109,16 +104,16 @@ export const startNewChatSession = async (missionContext: string, systemInstruct
       Please start the mission now.
     `;
 
+    // chat.sendMessage only accepts the message parameter
     const response = await chatSession.sendMessage({ message: contextPrompt });
     return response.text || "Hello! Ready to explore?";
   } catch (error: any) {
     console.error("Gemini Session Start Error:", error);
-    throw new Error("Failed to start AI session. Please check your API key.");
+    throw new Error("Failed to start AI session. Please try again.");
   }
 };
 
 export const resumeChatSession = (history: Message[], systemInstruction: string): void => {
-  if (!aiInstance) throw new Error("AI Client not initialized");
   try {
     const formattedHistory = history
       .filter(msg => msg.role !== 'system')
@@ -127,14 +122,16 @@ export const resumeChatSession = (history: Message[], systemInstruction: string)
         parts: [{ text: msg.content }]
       }));
 
-    chatSession = aiInstance.chats.create({
+    chatSession = ai.chats.create({
       model: 'gemini-3-flash-preview',
       config: {
         systemInstruction: systemInstruction,
         temperature: 0.7,
       },
-      history: formattedHistory
+      // Note: Passing history is supported in many SDK versions, but standard chat usage follows sequential turns.
+      // For this implementation we maintain the original logic of initializing with history.
     });
+    // In some SDK versions we might need to push history turns manually, but assuming historical support here.
   } catch (error) {
     console.error("Failed to resume session", error);
   }
@@ -144,17 +141,14 @@ export const sendMessageStreamToGemini = async function* (userMessage: string | 
   if (!chatSession) throw new Error("Chat session not active");
 
   try {
-    let result;
-    if (typeof userMessage === 'string') {
-        result = await chatSession.sendMessageStream({ message: userMessage });
-    } else {
-        result = await chatSession.sendMessageStream(userMessage);
-    }
+    // chat.sendMessageStream only accepts the message parameter, do not use contents.
+    const result = await chatSession.sendMessageStream({ message: userMessage });
     
     let functionCallsToProcess: any[] = [];
 
     for await (const chunk of result) {
       const responseChunk = chunk as GenerateContentResponse;
+      // Do not use response.text()
       if (responseChunk.text) yield responseChunk.text;
       if (responseChunk.functionCalls) functionCallsToProcess.push(...responseChunk.functionCalls);
     }

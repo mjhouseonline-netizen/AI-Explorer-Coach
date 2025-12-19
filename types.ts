@@ -18,18 +18,23 @@ export interface Message {
   timestamp: number;
 }
 
-export type MissionStep = 'WARMUP' | 'LEARN' | 'DO' | 'REFLECT' | 'COMPLETE';
-
 export type Audience = 'kids' | 'adults';
 
 export interface Profile {
   id: string;
   name: string;
+  email?: string;
   avatarColor: string;
   completedMissions: string[];
   audience: Audience;
   currentMissionId: string | null;
   chatHistory: Message[];
+  // Gamification Fields
+  xp: number;
+  level: number;
+  streak: number;
+  lastActiveDate?: string; // YYYY-MM-DD
+  totalMessagesSent: number;
 }
 
 export interface AppState {

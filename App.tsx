@@ -1,21 +1,23 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Track, Mission, Message, AppState, Profile, Audience } from './types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Track, Mission, Message, AppState, Profile } from './types';
 import { TRACKS, MISSIONS_KIDS, MISSIONS_ADULTS, SYSTEM_INSTRUCTION_KIDS, SYSTEM_INSTRUCTION_ADULTS } from './constants';
-import { initializeGemini, startNewChatSession, sendMessageStreamToGemini, resumeChatSession } from './services/geminiService';
+import { startNewChatSession, sendMessageStreamToGemini, resumeChatSession } from './services/geminiService';
 import { TrackCard } from './components/TrackCard';
 import { MissionSelector } from './components/MissionSelector';
 import { ChatInterface } from './components/ChatInterface';
 import { Confetti } from './components/Confetti';
 import { AchievementsModal } from './components/AchievementsModal';
+import { AdminPortal } from './components/AdminPortal';
 import { NotificationContainer, Notification, NotificationType } from './components/Notification';
 import { playSound } from './utils/audio';
-import { Brain, Key, Trophy, User, Users, ChevronLeft, Plus, UserCircle, Trash2, Play, LogOut, Settings } from 'lucide-react';
+import { Brain, Trophy, User, Users, ChevronLeft, Plus, UserCircle, Trash2, Play, LogOut, Settings, ShieldCheck, Mail, Flame, Star, Zap } from 'lucide-react';
 
 const COLORS = ['bg-indigo-500', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500', 'bg-cyan-500', 'bg-violet-500'];
+const ADMIN_EMAIL = 'bubblesfox@gmail.com';
+const XP_PER_LEVEL = 500;
 
 const App: React.FC = () => {
-  // --- STATE INITIALIZATION ---
   const [state, setState] = useState<AppState>(() => {
     try {
       const saved = localStorage.getItem('ai_explorer_v2');
@@ -32,11 +34,15 @@ const App: React.FC = () => {
           completedMissions: [],
           audience: 'kids',
           currentMissionId: null,
-          chatHistory: []
+          chatHistory: [],
+          xp: 0,
+          level: 1,
+          streak: 0,
+          totalMessagesSent: 0
         }],
         currentProfileId: defaultId,
         isChatLoading: false,
-        userApiKey: process.env.API_KEY || null
+        userApiKey: null // API_KEY handled via process.env exclusively
       };
     } catch (e) {
       return { profiles: [], currentProfileId: '', isChatLoading: false, userApiKey: null };
@@ -44,41 +50,57 @@ const App: React.FC = () => {
   });
 
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
-  const [showApiKeyModal, setShowApiKeyModal] = useState(!state.userApiKey);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showAdminPortal, setShowAdminPortal] = useState(false);
   const [isDashboardVisible, setIsDashboardVisible] = useState(true);
-  const [tempApiKey, setTempApiKey] = useState('');
   const [newProfileName, setNewProfileName] = useState('');
+  const [newProfileEmail, setNewProfileEmail] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
-  // --- PERSISTENCE ---
   useEffect(() => {
     localStorage.setItem('ai_explorer_v2', JSON.stringify(state));
   }, [state]);
 
-  // --- DERIVED DATA ---
   const currentProfile = useMemo(() => 
     state.profiles.find(p => p.id === state.currentProfileId) || state.profiles[0]
   , [state.profiles, state.currentProfileId]);
 
+  const isAdmin = currentProfile.email === ADMIN_EMAIL;
   const activeMissions = currentProfile.audience === 'kids' ? MISSIONS_KIDS : MISSIONS_ADULTS;
   const currentMission = activeMissions.find(m => m.id === currentProfile.currentMissionId) || null;
 
-  // --- AI INITIALIZATION ---
+  // --- STREAK LOGIC ---
   useEffect(() => {
-    if (state.userApiKey) {
-      initializeGemini(state.userApiKey);
-      if (currentMission && currentProfile.chatHistory.length > 0) {
-        const inst = currentProfile.audience === 'kids' ? SYSTEM_INSTRUCTION_KIDS : SYSTEM_INSTRUCTION_ADULTS;
-        resumeChatSession(currentProfile.chatHistory, inst);
+    const today = new Date().toISOString().split('T')[0];
+    if (currentProfile.lastActiveDate !== today) {
+      const last = currentProfile.lastActiveDate ? new Date(currentProfile.lastActiveDate) : null;
+      const now = new Date(today);
+      const diff = last ? (now.getTime() - last.getTime()) / (1000 * 3600 * 24) : null;
+      
+      let newStreak = currentProfile.streak;
+      if (diff === 1) {
+        newStreak += 1;
+        addNotification('info', `Streak continued! Day ${newStreak} 🔥`);
+      } else if (diff === null || diff > 1) {
+        newStreak = 1;
+        addNotification('info', "New streak started! Keep it up. 🔥");
       }
+      
+      updateCurrentProfile({ lastActiveDate: today, streak: newStreak });
     }
-  }, [state.userApiKey, state.currentProfileId]);
+  }, [state.currentProfileId]);
 
-  // --- HELPERS ---
+  useEffect(() => {
+    // Resume session if mission is active
+    if (currentMission && currentProfile.chatHistory.length > 0) {
+      const inst = currentProfile.audience === 'kids' ? SYSTEM_INSTRUCTION_KIDS : SYSTEM_INSTRUCTION_ADULTS;
+      resumeChatSession(currentProfile.chatHistory, inst);
+    }
+  }, [state.currentProfileId]);
+
   const addNotification = (type: NotificationType, message: string) => {
     const id = Date.now().toString();
     setNotifications(prev => [...prev, { id, type, message }]);
@@ -95,28 +117,23 @@ const App: React.FC = () => {
     }));
   };
 
-  const trackProgressMap = useMemo(() => {
-    const stats: Record<string, { completed: number; total: number }> = {};
-    TRACKS.forEach(t => stats[t] = { completed: 0, total: 0 });
-    activeMissions.forEach(m => {
-      stats[m.track].total += 1;
-      if (currentProfile.completedMissions.includes(m.id)) stats[m.track].completed += 1;
-    });
-    return stats;
-  }, [activeMissions, currentProfile.completedMissions]);
-
-  // --- HANDLERS ---
   const handleCreateProfile = () => {
     if (!newProfileName.trim()) return;
     const newId = Date.now().toString();
     const newProf: Profile = {
       id: newId,
       name: newProfileName,
+      email: newProfileEmail.trim().toLowerCase(),
       avatarColor: COLORS[state.profiles.length % COLORS.length],
       completedMissions: [],
       audience: 'kids',
       currentMissionId: null,
-      chatHistory: []
+      chatHistory: [],
+      xp: 0,
+      level: 1,
+      streak: 1,
+      lastActiveDate: new Date().toISOString().split('T')[0],
+      totalMessagesSent: 0
     };
     setState(prev => ({
       ...prev,
@@ -124,6 +141,7 @@ const App: React.FC = () => {
       currentProfileId: newId
     }));
     setNewProfileName('');
+    setNewProfileEmail('');
     setShowProfileModal(false);
     setIsDashboardVisible(true);
     addNotification('success', `Welcome, ${newProf.name}!`);
@@ -158,7 +176,19 @@ const App: React.FC = () => {
     const botMsg: Message = { id: botId, role: 'model', content: '', timestamp: Date.now() + 1 };
 
     const newHistory = [...currentProfile.chatHistory, userMsg, botMsg];
-    updateCurrentProfile({ chatHistory: newHistory });
+    const newXp = currentProfile.xp + 5; // Curiosity bonus
+    updateCurrentProfile({ 
+      chatHistory: newHistory, 
+      xp: newXp, 
+      totalMessagesSent: currentProfile.totalMessagesSent + 1 
+    });
+    
+    // Check level up from interaction
+    if (Math.floor(newXp / XP_PER_LEVEL) + 1 > currentProfile.level) {
+      updateCurrentProfile({ level: Math.floor(newXp / XP_PER_LEVEL) + 1 });
+      addNotification('success', "Level Up! Your curiosity is growing.");
+    }
+
     setState(prev => ({ ...prev, isChatLoading: true }));
 
     try {
@@ -184,53 +214,55 @@ const App: React.FC = () => {
   const completeMission = () => {
     if (!currentMission) return;
     if (soundEnabled) playSound('complete');
+    
+    const xpReward = currentMission.level * 100;
     const mid = currentMission.id;
+    const isFirstTime = !currentProfile.completedMissions.includes(mid);
+    const newXp = currentProfile.xp + (isFirstTime ? xpReward : 10);
+    const newLevel = Math.floor(newXp / XP_PER_LEVEL) + 1;
+
     updateCurrentProfile({
-      completedMissions: currentProfile.completedMissions.includes(mid) ? currentProfile.completedMissions : [...currentProfile.completedMissions, mid],
+      completedMissions: isFirstTime ? [...currentProfile.completedMissions, mid] : currentProfile.completedMissions,
       currentMissionId: null,
-      chatHistory: []
+      chatHistory: [],
+      xp: newXp,
+      level: newLevel
     });
+
+    if (newLevel > currentProfile.level) {
+      addNotification('success', `BOOM! Level ${newLevel} unlocked! 🚀`);
+    }
+
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 5000);
     setIsDashboardVisible(true);
-    addNotification('success', "Mission Accomplished! Badge earned.");
+    addNotification('success', `Mission Complete! +${xpReward} XP Earned.`);
   };
 
   const quitMission = () => {
-    if (window.confirm("Abandon this mission? Your current conversation will be cleared.")) {
-      updateCurrentProfile({ currentMissionId: null, chatHistory: [] });
+    if (window.confirm("Abandon this mission? Progress will be saved locally.")) {
+      updateCurrentProfile({ currentMissionId: null });
       setIsDashboardVisible(true);
     }
   };
+
+  const trackProgressMap = useMemo(() => {
+    const stats: Record<string, { completed: number; total: number }> = {};
+    TRACKS.forEach(t => stats[t] = { completed: 0, total: 0 });
+    activeMissions.forEach(m => {
+      stats[m.track].total += 1;
+      if (currentProfile.completedMissions.includes(m.id)) stats[m.track].completed += 1;
+    });
+    return stats;
+  }, [activeMissions, currentProfile.completedMissions]);
+
+  const levelProgress = (currentProfile.xp % XP_PER_LEVEL) / XP_PER_LEVEL * 100;
 
   return (
     <div className="min-h-screen bg-slate-900 overflow-hidden h-full flex flex-col text-slate-100 selection:bg-cyan-500/30">
       <NotificationContainer notifications={notifications} onDismiss={removeNotification} />
       {showConfetti && <Confetti />}
-      
-      {/* API Key Modal */}
-      {showApiKeyModal && (
-        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-700 max-w-md w-full shadow-2xl">
-            <Key className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-center mb-2 font-fredoka">Connect to Gemini</h2>
-            <p className="text-slate-400 text-sm text-center mb-6">Enter your API Key to enable the AI Coach.</p>
-            <input 
-              type="password" 
-              value={tempApiKey} 
-              onChange={e => setTempApiKey(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 mb-4 text-white focus:ring-2 focus:ring-cyan-500 transition-all outline-none"
-              placeholder="AIza..."
-            />
-            <button 
-              onClick={() => { setState(s => ({...s, userApiKey: tempApiKey})); setShowApiKeyModal(false); }}
-              className="w-full bg-cyan-600 hover:bg-cyan-500 py-3 rounded-lg font-bold transition-all transform active:scale-[0.98]"
-            >Let's Explore!</button>
-          </div>
-        </div>
-      )}
 
-      {/* Profile Switcher Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 z-[150] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -247,7 +279,7 @@ const App: React.FC = () => {
                     <div className={`w-10 h-10 rounded-full ${p.avatarColor} flex items-center justify-center font-bold text-white shadow-inner shrink-0`}>{p.name[0]}</div>
                     <div className="text-left overflow-hidden">
                       <div className="font-bold truncate text-sm md:text-base">{p.name}</div>
-                      <div className="text-[10px] opacity-70 uppercase font-bold tracking-tighter">{p.audience} mode</div>
+                      <div className="text-[10px] opacity-70 uppercase font-bold tracking-tighter truncate max-w-full">Level {p.level || 1} • {p.email || `${p.audience} mode`}</div>
                     </div>
                   </button>
                   {state.profiles.length > 1 && (
@@ -268,15 +300,32 @@ const App: React.FC = () => {
                 </div>
               ))}
             </div>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={newProfileName} 
-                onChange={e => setNewProfileName(e.target.value)} 
-                placeholder="New Name"
-                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
-              <button onClick={handleCreateProfile} className="bg-indigo-600 hover:bg-indigo-500 p-2 rounded-lg text-white transition-colors"><Plus className="w-5 h-5" /></button>
+            
+            <div className="space-y-3 bg-slate-800/40 p-4 rounded-2xl border border-slate-700">
+              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1">Create Explorer</p>
+              <div className="flex gap-2">
+                <div className="p-2 bg-slate-900 rounded-lg text-slate-400"><User className="w-4 h-4" /></div>
+                <input 
+                  type="text" 
+                  value={newProfileName} 
+                  onChange={e => setNewProfileName(e.target.value)} 
+                  placeholder="Explorer Name"
+                  className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+              <div className="flex gap-2">
+                <div className="p-2 bg-slate-900 rounded-lg text-slate-400"><Mail className="w-4 h-4" /></div>
+                <input 
+                  type="email" 
+                  value={newProfileEmail} 
+                  onChange={e => setNewProfileEmail(e.target.value)} 
+                  placeholder="Email (Optional)"
+                  className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+              <button onClick={handleCreateProfile} className="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-2">
+                <Plus className="w-4 h-4" /> Add Explorer
+              </button>
             </div>
             <button onClick={() => setShowProfileModal(false)} className="w-full mt-4 py-2 text-slate-500 hover:text-slate-300 text-sm font-medium">Close</button>
           </div>
@@ -295,7 +344,7 @@ const App: React.FC = () => {
       ) : (
         <div className="flex-1 overflow-y-auto w-full scroll-smooth">
           <div className="max-w-6xl mx-auto p-4 md:p-8">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 lg:mb-12">
+            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 lg:mb-12">
               <div className="flex items-center gap-4">
                 <div className={`p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 shadow-xl shadow-indigo-900/20`}>
                   <Brain className="w-8 h-8 text-white" />
@@ -319,23 +368,62 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex gap-2 w-full sm:w-auto items-center">
-                {currentMission && (
-                  <button 
-                    onClick={() => setIsDashboardVisible(false)}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 px-5 py-2.5 rounded-xl border border-indigo-500 hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-900/40 active:scale-[0.98]"
-                  >
-                    <Play className="w-4 h-4 text-white fill-current" />
-                    <span className="font-bold text-sm">Resume</span>
+              <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-stretch sm:items-center">
+                {/* Gamification Bar */}
+                <div className="flex items-center gap-4 bg-slate-800/50 px-4 py-2.5 rounded-2xl border border-slate-700/50 backdrop-blur-sm shadow-inner">
+                   <div className="flex flex-col gap-1 min-w-[120px]">
+                      <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        <span>Level {currentProfile.level}</span>
+                        <span className="text-cyan-400">{Math.floor(levelProgress)}%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-700/30">
+                        <div 
+                          className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all duration-1000 ease-out" 
+                          style={{ width: `${levelProgress}%` }} 
+                        />
+                      </div>
+                   </div>
+                   <div className="w-px h-8 bg-slate-700/50" />
+                   <div className="flex items-center gap-2 group cursor-help" title="Daily Streak">
+                      <div className="relative">
+                        <Flame className={`w-5 h-5 ${currentProfile.streak > 0 ? 'text-orange-500 animate-pulse' : 'text-slate-600'}`} />
+                        {currentProfile.streak > 0 && <div className="absolute inset-0 bg-orange-500/20 blur-lg rounded-full animate-ping" />}
+                      </div>
+                      <span className="font-black text-sm text-slate-200">{currentProfile.streak}</span>
+                   </div>
+                   <div className="flex items-center gap-2 text-amber-400">
+                      <Star className="w-5 h-5 fill-current" />
+                      <span className="font-black text-sm">{currentProfile.xp} XP</span>
+                   </div>
+                </div>
+
+                <div className="flex gap-2 flex-1 sm:flex-none">
+                  {isAdmin && (
+                    <button 
+                      onClick={() => setShowAdminPortal(true)}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800/80 px-4 py-2.5 rounded-xl border border-indigo-500/30 hover:bg-indigo-900/30 transition-all text-indigo-400 group"
+                    >
+                      <ShieldCheck className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      <span className="font-bold text-sm hidden sm:inline">Admin</span>
+                    </button>
+                  )}
+                  {currentMission && (
+                    <button 
+                      onClick={() => setIsDashboardVisible(false)}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 px-5 py-2.5 rounded-xl border border-indigo-500 hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-900/40 active:scale-[0.98]"
+                    >
+                      <Play className="w-4 h-4 text-white fill-current" />
+                      <span className="font-bold text-sm">Resume</span>
+                    </button>
+                  )}
+                  <button onClick={() => setShowAchievements(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800 px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all active:scale-[0.98]">
+                    <Trophy className="w-4 h-4 text-yellow-400" />
+                    <span className="font-bold text-sm">Badges</span>
                   </button>
-                )}
-                <button onClick={() => setShowAchievements(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800 px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all active:scale-[0.98]">
-                  <Trophy className="w-4 h-4 text-yellow-400" />
-                  <span className="font-bold text-sm">Badges</span>
-                </button>
-                <button onClick={() => setShowApiKeyModal(true)} className="p-2.5 bg-slate-800 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700 transition-all" title="Settings">
-                    <Settings className="w-5 h-5" />
-                </button>
+                  <button className="p-2.5 bg-slate-800 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700 transition-all" title="Settings">
+                      <Settings className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </header>
 
@@ -343,7 +431,7 @@ const App: React.FC = () => {
               <div className={`${selectedTrack ? 'hidden lg:block lg:col-span-4' : 'col-span-12 lg:col-span-4'} space-y-6`}>
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold font-fredoka flex items-center gap-2">
-                    <Users className="w-5 h-5 text-cyan-400" /> Choose a Track
+                    <Zap className="w-5 h-5 text-cyan-400" /> Choose a Track
                     </h2>
                 </div>
                 <div className={`grid gap-4 ${selectedTrack ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-1'}`}>
@@ -418,6 +506,17 @@ const App: React.FC = () => {
           onClose={() => setShowAchievements(false)} 
           completedMissions={currentProfile.completedMissions} 
           allMissions={activeMissions} 
+          profiles={state.profiles}
+          currentProfileId={state.currentProfileId}
+        />
+      )}
+
+      {showAdminPortal && (
+        <AdminPortal 
+          isOpen={true}
+          onClose={() => setShowAdminPortal(false)}
+          profiles={state.profiles}
+          allMissions={activeMissions}
         />
       )}
     </div>

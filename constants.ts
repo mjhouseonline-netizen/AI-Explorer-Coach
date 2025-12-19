@@ -366,8 +366,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Prompt Engineering: The SPACE Framework",
     "level": 1,
     "duration_minutes": 20,
-    "goal": "Master the SPACE framework to eliminate ambiguity.",
-    "sample_activity_idea": "Rebuild a vague request into a high-quality prompt using Subject, Purpose, Audience, Context, and Extras."
+    "goal": "Master the SPACE framework (Subject, Purpose, Audience, Context, Extras) to eliminate ambiguity in business communication and content creation.",
+    "sample_activity_idea": "Transform a weak prompt like 'write a product description' into a detailed one using SPACE for a new eco-friendly water bottle aimed at hikers, including technical specs and a persuasive tone."
   },
   {
     "id": "adult-prompts-2",
@@ -375,8 +375,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Chain-of-Thought Reasoning",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Unlock reasoning by asking it to 'think step-by-step'.",
-    "sample_activity_idea": "Give AI a logic puzzle and use the magic phrase 'Let's think step by step' to get a correct solution."
+    "goal": "Unlock the AI's advanced logic for debugging, strategic planning, or complex math by leveraging Chain-of-Thought prompting techniques like 'think step-by-step'.",
+    "sample_activity_idea": "Solve a multi-stage business logic puzzle or a complex project planning task by forcing the model to show its step-by-step reasoning before providing the final answer."
   },
   {
     "id": "adult-prompts-3",
@@ -384,8 +384,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Few-Shot Prompting",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Improve reliability by providing examples (shots) within the prompt.",
-    "sample_activity_idea": "Create a feedback classifier prompt with 3 examples of inputs and outputs."
+    "goal": "Improve reliability and output consistency by providing high-quality examples (shots) within your prompt for specific tasks like data extraction or tone matching.",
+    "sample_activity_idea": "Create a feedback classifier prompt by providing 3 specific examples of user reviews and how they should be categorized into 'Positive', 'Neutral', or 'Negative'."
   },
   {
     "id": "adult-prompts-4",
@@ -393,8 +393,8 @@ export const MISSIONS_ADULTS: Mission[] = [
     "title": "Exploring Prompt Variations",
     "level": 2,
     "duration_minutes": 25,
-    "goal": "Experiment with different phrasing to understand its impact.",
-    "sample_activity_idea": "Take a core prompt and generate 3 variations, analyzing the differences in AI output."
+    "goal": "Understand how subtle phrasing changes can impact AI performance and creativity by testing and comparing multiple prompt versions.",
+    "sample_activity_idea": "Take a core request and generate 3 variations—one direct, one role-based, and one constraint-heavy—to see which produces the most useful business result."
   },
   {
     "id": "adult-stories-1",
@@ -646,7 +646,7 @@ export const MISSIONS_ADULTS: Mission[] = [
     "level": 2,
     "duration_minutes": 30,
     "goal": "Use AI to facilitate a SWOT analysis for a project.",
-    "sample_activity_idea": "Describe a business idea and ask AI to generate a detailed SWOT analysis."
+    "sample_activity_idea": "Draft a SWOT analysis for a new AI-driven marketing campaign. Have AI identify internal strengths in content automation, external threats like algorithm changes, and specific sales opportunities in untapped demographics."
   },
   {
     "id": "adult-business-2",
@@ -655,7 +655,7 @@ export const MISSIONS_ADULTS: Mission[] = [
     "level": 2,
     "duration_minutes": 25,
     "goal": "Draft and role-play difficult professional emails.",
-    "sample_activity_idea": "Rewrite a request for a raise to be 'firm but professional'."
+    "sample_activity_idea": "Draft a series of customer service responses handling complex shipping delays, or practice a sales 'rebuttal' prompt to handle common price objections in a high-stakes B2B software pitch."
   },
   {
     "id": "adult-business-3",
@@ -664,7 +664,7 @@ export const MISSIONS_ADULTS: Mission[] = [
     "level": 1,
     "duration_minutes": 20,
     "goal": "Summarize messy notes into clean action items.",
-    "sample_activity_idea": "Paste a transcript and ask AI to extract a list of action items with deadlines."
+    "sample_activity_idea": "Input a transcript from a sales discovery call. Ask AI to categorize points into 'Customer Pain Points' (Service), 'Budget Signals' (Sales), and 'Marketing Feedback', then generate a clear follow-up action plan."
   },
   {
     "id": "adult-project-1",

@@ -26,6 +26,17 @@
       .safe-pb {
         padding-bottom: env(safe-area-inset-bottom);
       }
+      
+      /* Code Editor Themes */
+      .token.comment, .token.prolog, .token.doctype, .token.cdata { color: #64748b; font-style: italic; }
+      .token.punctuation { color: #94a3b8; }
+      .token.namespace { opacity: .7; }
+      .token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted { color: #22d3ee; }
+      .token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted { color: #fbbf24; }
+      .token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string { color: #818cf8; }
+      .token.atrule, .token.attr-value, .token.keyword { color: #f43f5e; font-weight: bold; }
+      .token.function, .token.class-name { color: #c084fc; }
+      .token.regex, .token.important, .token.variable { color: #e11d48; }
     </style>
   <script type="importmap">
 {
@@ -35,7 +46,8 @@
     "react": "https://aistudiocdn.com/react@^19.2.1",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.559.0",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.32.0",
-    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0"
+    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
+    "prismjs": "https://esm.sh/prismjs@1.29.0"
   }
 }
 </script>
