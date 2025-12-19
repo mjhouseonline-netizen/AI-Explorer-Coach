@@ -65,7 +65,12 @@ const generateImage = async (prompt: string): Promise<string | null> => {
 };
 
 const generateAudio = async (prompt: string): Promise<string> => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+     // Simulate possible tool failure for demonstration if prompt is too short or specific
+     if (prompt.length < 2) {
+       reject(new Error("Prompt too short"));
+       return;
+     }
      setTimeout(() => {
         resolve(`data:audio/wav;base64,${createDummyWav()}`);
      }, 1500);
@@ -128,10 +133,7 @@ export const resumeChatSession = (history: Message[], systemInstruction: string)
         systemInstruction: systemInstruction,
         temperature: 0.7,
       },
-      // Note: Passing history is supported in many SDK versions, but standard chat usage follows sequential turns.
-      // For this implementation we maintain the original logic of initializing with history.
     });
-    // In some SDK versions we might need to push history turns manually, but assuming historical support here.
   } catch (error) {
     console.error("Failed to resume session", error);
   }
@@ -141,14 +143,12 @@ export const sendMessageStreamToGemini = async function* (userMessage: string | 
   if (!chatSession) throw new Error("Chat session not active");
 
   try {
-    // chat.sendMessageStream only accepts the message parameter, do not use contents.
     const result = await chatSession.sendMessageStream({ message: userMessage });
     
     let functionCallsToProcess: any[] = [];
 
     for await (const chunk of result) {
       const responseChunk = chunk as GenerateContentResponse;
-      // Do not use response.text()
       if (responseChunk.text) yield responseChunk.text;
       if (responseChunk.functionCalls) functionCallsToProcess.push(...responseChunk.functionCalls);
     }
@@ -159,15 +159,29 @@ export const sendMessageStreamToGemini = async function* (userMessage: string | 
         if (call.name === 'generate_image') {
           const prompt = call.args['prompt'];
           yield `\n\n*🎨 Creating: ${prompt}...*\n\n`;
-          const base64Image = await generateImage(prompt);
-          if (base64Image) yield `![Generated Image](${base64Image})\n\n`;
-          functionResponses.push({ functionResponse: { name: 'generate_image', id: call.id, response: { result: "Success" } } });
+          try {
+            const base64Image = await generateImage(prompt);
+            if (base64Image) {
+              yield `![Generated Image](${base64Image})\n\n`;
+              functionResponses.push({ functionResponse: { name: 'generate_image', id: call.id, response: { result: "Success" } } });
+            } else {
+              throw new Error("No image data returned");
+            }
+          } catch (e) {
+            yield `\n\n> ⚠️ **Coach's Note**: I tried to create that image, but my creative tool hit a snag. Let's try describing it again, or we can continue with the lesson!\n\n`;
+            functionResponses.push({ functionResponse: { name: 'generate_image', id: call.id, response: { result: "Error: Generation failed" } } });
+          }
         } else if (call.name === 'generate_audio') {
             const prompt = call.args['prompt'];
             yield `\n\n*🎵 Composing: ${prompt}...*\n\n`;
-            const audioDataUrl = await generateAudio(prompt);
-            yield `[🔊 Play Audio](${audioDataUrl})\n\n`;
-            functionResponses.push({ functionResponse: { name: 'generate_audio', id: call.id, response: { result: "Success" } } });
+            try {
+              const audioDataUrl = await generateAudio(prompt);
+              yield `[🔊 Play Audio](${audioDataUrl})\n\n`;
+              functionResponses.push({ functionResponse: { name: 'generate_audio', id: call.id, response: { result: "Success" } } });
+            } catch (e) {
+              yield `\n\n> ⚠️ **Coach's Note**: I couldn't quite get the audio engine started for that sound. Let's try a different description or keep exploring!\n\n`;
+              functionResponses.push({ functionResponse: { name: 'generate_audio', id: call.id, response: { result: "Error: Audio creation failed" } } });
+            }
         }
       }
 

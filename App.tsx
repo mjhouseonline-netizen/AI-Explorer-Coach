@@ -9,6 +9,7 @@ import { ChatInterface } from './components/ChatInterface';
 import { Confetti } from './components/Confetti';
 import { AchievementsModal } from './components/AchievementsModal';
 import { AdminPortal } from './components/AdminPortal';
+import { SettingsModal } from './components/SettingsModal';
 import { NotificationContainer, Notification, NotificationType } from './components/Notification';
 import { playSound } from './utils/audio';
 import { Brain, Trophy, User, Users, ChevronLeft, Plus, UserCircle, Trash2, Play, LogOut, Settings, ShieldCheck, Mail, Flame, Star, Zap } from 'lucide-react';
@@ -42,7 +43,7 @@ const App: React.FC = () => {
         }],
         currentProfileId: defaultId,
         isChatLoading: false,
-        userApiKey: null // API_KEY handled via process.env exclusively
+        userApiKey: null
       };
     } catch (e) {
       return { profiles: [], currentProfileId: '', isChatLoading: false, userApiKey: null };
@@ -52,6 +53,7 @@ const App: React.FC = () => {
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showAdminPortal, setShowAdminPortal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [isDashboardVisible, setIsDashboardVisible] = useState(true);
   const [newProfileName, setNewProfileName] = useState('');
   const [newProfileEmail, setNewProfileEmail] = useState('');
@@ -72,7 +74,6 @@ const App: React.FC = () => {
   const activeMissions = currentProfile.audience === 'kids' ? MISSIONS_KIDS : MISSIONS_ADULTS;
   const currentMission = activeMissions.find(m => m.id === currentProfile.currentMissionId) || null;
 
-  // --- STREAK LOGIC ---
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     if (currentProfile.lastActiveDate !== today) {
@@ -94,7 +95,6 @@ const App: React.FC = () => {
   }, [state.currentProfileId]);
 
   useEffect(() => {
-    // Resume session if mission is active
     if (currentMission && currentProfile.chatHistory.length > 0) {
       const inst = currentProfile.audience === 'kids' ? SYSTEM_INSTRUCTION_KIDS : SYSTEM_INSTRUCTION_ADULTS;
       resumeChatSession(currentProfile.chatHistory, inst);
@@ -176,14 +176,13 @@ const App: React.FC = () => {
     const botMsg: Message = { id: botId, role: 'model', content: '', timestamp: Date.now() + 1 };
 
     const newHistory = [...currentProfile.chatHistory, userMsg, botMsg];
-    const newXp = currentProfile.xp + 5; // Curiosity bonus
+    const newXp = currentProfile.xp + 5;
     updateCurrentProfile({ 
       chatHistory: newHistory, 
       xp: newXp, 
       totalMessagesSent: currentProfile.totalMessagesSent + 1 
     });
     
-    // Check level up from interaction
     if (Math.floor(newXp / XP_PER_LEVEL) + 1 > currentProfile.level) {
       updateCurrentProfile({ level: Math.floor(newXp / XP_PER_LEVEL) + 1 });
       addNotification('success', "Level Up! Your curiosity is growing.");
@@ -243,6 +242,13 @@ const App: React.FC = () => {
     if (window.confirm("Abandon this mission? Progress will be saved locally.")) {
       updateCurrentProfile({ currentMissionId: null });
       setIsDashboardVisible(true);
+    }
+  };
+
+  const handleFactoryReset = () => {
+    if (window.confirm("Are you ABSOLUTELY sure? This will delete all explorers and progress permanently.")) {
+      localStorage.removeItem('ai_explorer_v2');
+      window.location.reload();
     }
   };
 
@@ -335,6 +341,7 @@ const App: React.FC = () => {
       {!isDashboardVisible && currentMission ? (
         <ChatInterface 
           mission={currentMission} 
+          audience={currentProfile.audience}
           history={currentProfile.chatHistory} 
           isLoading={state.isChatLoading} 
           onSendMessage={handleSendMessage} 
@@ -369,7 +376,6 @@ const App: React.FC = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-stretch sm:items-center">
-                {/* Gamification Bar */}
                 <div className="flex items-center gap-4 bg-slate-800/50 px-4 py-2.5 rounded-2xl border border-slate-700/50 backdrop-blur-sm shadow-inner">
                    <div className="flex flex-col gap-1 min-w-[120px]">
                       <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -420,7 +426,11 @@ const App: React.FC = () => {
                     <Trophy className="w-4 h-4 text-yellow-400" />
                     <span className="font-bold text-sm">Badges</span>
                   </button>
-                  <button className="p-2.5 bg-slate-800 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700 transition-all" title="Settings">
+                  <button 
+                    onClick={() => setShowSettings(true)}
+                    className="p-2.5 bg-slate-800 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700 transition-all" 
+                    title="Settings"
+                  >
                       <Settings className="w-5 h-5" />
                   </button>
                 </div>
@@ -517,6 +527,16 @@ const App: React.FC = () => {
           onClose={() => setShowAdminPortal(false)}
           profiles={state.profiles}
           allMissions={activeMissions}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsModal 
+          isOpen={true}
+          onClose={() => setShowSettings(false)}
+          soundEnabled={soundEnabled}
+          onToggleSound={() => setSoundEnabled(!soundEnabled)}
+          onResetAll={handleFactoryReset}
         />
       )}
     </div>

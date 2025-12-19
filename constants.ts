@@ -5,6 +5,22 @@ export const TRACKS: Track[] = [
   'Basics', 'Prompts', 'Creative Stories', 'Creative Images', 'Video', 'Music', 'Coding', 'Research', 'Data', 'Automation', 'Business', 'Projects'
 ];
 
+export const SAFETY_TIPS_KIDS = [
+  "🔒 **Keep it Private**: Never tell an AI your real name, address, or where you go to school.",
+  "🤖 **AI isn't Human**: AI doesn't have feelings or a brain like you. It's just a very smart pattern-finder.",
+  "🕵️ **Fact Check**: AI can sometimes 'hallucinate' (make things up). Always double-check important facts!",
+  "🎨 **Be Kind**: Use AI to create and help, never to make fun of others or be mean.",
+  "📚 **School First**: AI is a great tutor, but using it to do your homework without learning is 'cheating yourself'."
+];
+
+export const SAFETY_TIPS_ADULTS = [
+  "⚖️ **Check for Bias**: AI can inherit prejudices from its training data. Always review outputs for fairness.",
+  "🔍 **Verify Sources**: Large Language Models are not search engines; they predict text. Always verify critical data.",
+  "📂 **Data Privacy**: Avoid uploading sensitive corporate data or PII (Personally Identifiable Information) to public AI models.",
+  "📝 **IP Awareness**: Be aware of copyright and intellectual property when using AI-generated content for commercial use.",
+  "🧠 **Human-in-the-loop**: AI is a co-pilot, not an autopilot. Critical decisions should always be made by a human."
+];
+
 export const MISSIONS_KIDS: Mission[] = [
   {
     "id": "basics-1",
@@ -353,6 +369,15 @@ export const MISSIONS_ADULTS: Mission[] = [
   },
   {
     "id": "adult-basics-3",
+    "track": "Basics",
+    "title": "Understanding AI Bias and Fairness",
+    "level": 1,
+    "duration_minutes": 20,
+    "goal": "Explore types of AI bias (historical, algorithmic), their real-world impact, and mitigation strategies.",
+    "sample_activity_idea": "Analyze a case study on biased hiring tools or facial recognition, and discuss methods for auditing for fairness."
+  },
+  {
+    "id": "adult-basics-4",
     "track": "Basics",
     "title": "The Ethics of AI & Bias",
     "level": 1,
